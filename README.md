@@ -1,39 +1,74 @@
-# ☀️ SolarScan — Automated Rooftop Solar Feasibility Reports from OpenStreetMap Building Footprints
+<div align="center">
+  <h1>☀️ SolarScan</h1>
+  <p><strong>Automated Rooftop Solar Feasibility Reports from OpenStreetMap Building Footprints</strong></p>
 
-[![License: CC0 1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square)](https://creativecommons.org/publicdomain/zero/1.0/)
-[![Language](https://img.shields.io/badge/Python-3.10+-blue.svg?style=flat-square&logo=python&logoColor=white)](#)
-[![Platform](https://img.shields.io/badge/Platform-Cross--platform-lightgrey.svg?style=flat-square)](#)
-[![Key Dependency](https://img.shields.io/badge/OSM_Overpass-API-7EBC6F.svg?style=flat-square)](#)
+  [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+  [![License: CC0 1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square)](https://creativecommons.org/publicdomain/zero/1.0/)
+  [![Platform](https://img.shields.io/badge/Platform-Cross--platform-lightgrey.svg?style=flat-square)](#)
+  [![Key Dependency](https://img.shields.io/badge/OSM_Overpass-API-7EBC6F.svg?style=flat-square)](https://overpass-api.de/)
+  [![CI](https://github.com/IamOumarIbrahim/SolarScan/actions/workflows/ci.yml/badge.svg)](https://github.com/IamOumarIbrahim/SolarScan/actions)
+</div>
+
+<br />
 
 <p align="center">
   <img src="assets/report_preview.png" alt="SolarScan Live Demo Animation" width="100%" />
 </p>
 
+> [!IMPORTANT]
+> **Zero-Dependency Core Setup**: SolarScan queries public OpenStreetMap Overpass data directly and runs locally across Windows, macOS, and Linux with standard Python 3.10+.
+
 SolarScan pulls a building's exact rooftop polygon from OpenStreetMap, estimates usable panel area after applying setback and orientation penalties, and generates a PDF feasibility report — system size, estimated annual yield, and simple payback — without requiring a site visit or a paid tool like Aurora Solar or SAM. It's built on the same rooftop-sizing math used in commercial PV design work, just automated against any address instead of one hand-surveyed site.
+
+<br />
+
+## 📌 Repository About & Topics
+
+### About
+Automated rooftop solar PV feasibility report generator using OpenStreetMap Overpass API, shoelace polygon geometry, fire-code setback modeling, and automated PDF export.
+
+### Topics / Tags
+`solar-pv`, `osm-overpass`, `rooftop-solar`, `photovoltaic-sizing`, `shoelace-algorithm`, `feasibility-report`, `pdf-generation`, `python-3`, `renewable-energy`, `gis-geometry`
 
 ---
 
 ## 📖 Table of Contents
+- [What is SolarScan?](#-what-is-solarscan)
 - [Key Features](#-key-features)
 - [System Architecture](#%EF%B8%8F-system-architecture)
 - [Mathematical Foundations](#-mathematical-foundations)
-- [Quick Setup & Installation](#-quick-setup--installation)
+- [Setup & Installation](#-setup--installation)
 - [How to Use](#-how-to-use)
 - [Configuration](#%EF%B8%8F-configuration)
+- [Scope & Limitations](#-scope--limitations)
 - [File Structure](#-file-structure)
 - [Troubleshooting](#%EF%B8%8F-troubleshooting)
+- [Deployment & Releases](#-deployment--releases)
+- [Contributing](#-contributing)
+- [Security Policy & Code of Conduct](#-security-policy--code-of-conduct)
 - [License](#-license)
+
+---
+
+## 💡 What is SolarScan?
+
+Commercial solar feasibility assessments traditionally require manual site surveys or expensive proprietary software subscriptions (e.g. Aurora Solar or SAM). SolarScan replaces manual aerial tracing with automated OpenStreetMap (OSM) spatial queries, extracting precise 2D building footprint polygons to deliver instant DC array sizing, annual kWh yield estimates, and financial payback calculations in a client-ready PDF report.
+
+Instead of manual hand-surveys, SolarScan automates the spatial analysis pipeline:
+- **Footprint-Accurate Area Extraction**: Queries OSM Overpass API for exact building polygon vertices.
+- **Setback & Obstruction Sizing**: Insets roof boundaries for fire-code compliance and accounts for roof obstructions.
+- **One-Click PDF Generation**: Produces a complete feasibility report with custom footprint diagrams and yield metrics.
 
 ---
 
 ## ✨ Key Features
 
-- **Footprint-Accurate Area Extraction**: Queries the OSM Overpass API for a building's tagged footprint polygon and computes usable roof area directly from its vertices via the shoelace formula, instead of assuming a generic rectangle.
-- **Orientation & Tilt Penalty Modeling**: Derives roof azimuth from the footprint's dominant edge and applies an irradiance derating curve for non-optimal orientation and a configurable default tilt.
-- **Setback-Aware Usable Area**: Automatically insets the usable area polygon by a configurable fire-code setback distance and subtracts detected obstruction tags (chimneys, vents) where present in OSM data.
-- **Automated System Sizing**: Converts usable area into a DC array size at a standard module efficiency, then applies a target DC/AC ratio to recommend an inverter capacity band.
-- **One-Click PDF Report**: Generates a client-ready PDF with a footprint diagram, system specs, estimated annual kWh yield, and a simple payback estimate using a local utility rate input.
-- **Batch Mode for Portfolios**: Accepts a CSV of addresses and produces one feasibility report per row, built for scanning an entire street or client portfolio in a single run.
+- 📐 **Footprint-Accurate Area Extraction**: Queries the OSM Overpass API for a building's tagged footprint polygon and computes usable roof area directly from its vertices via the shoelace formula, instead of assuming a generic rectangle.
+- 🧭 **Orientation & Tilt Penalty Modeling**: Derives roof azimuth from the footprint's dominant edge and applies an irradiance derating curve for non-optimal orientation and a configurable default tilt.
+- 📐 **Setback-Aware Usable Area**: Automatically insets the usable area polygon by a configurable fire-code setback distance and subtracts detected obstruction tags (chimneys, vents) where present in OSM data.
+- ⚡ **Automated System Sizing**: Converts usable area into a DC array size at a standard module efficiency, then applies a target DC/AC ratio to recommend an inverter capacity band.
+- 📄 **One-Click PDF Report**: Generates a client-ready PDF with a footprint diagram, system specs, estimated annual kWh yield, and a simple payback estimate using a local utility rate input.
+- 📊 **Batch Mode for Portfolios**: Accepts a CSV of addresses and produces one feasibility report per row, built for scanning an entire street or client portfolio in a single run.
 
 ---
 
@@ -54,6 +89,9 @@ graph TD
     classDef process fill:#1e1b4b,stroke:#a855f7,stroke-width:2px,color:#fff;
     class Stage1,Stage2,Stage3,Stage4,Stage5 process;
 ```
+
+> [!NOTE]
+> **Spatial Processing Design**: SolarScan converts spherical latitude/longitude coordinates from OSM into localized metric Cartesian projections prior to computing Shoelace area and edge azimuths to prevent geographic distortion.
 
 ---
 
@@ -82,52 +120,53 @@ $$C_{array} = A_{usable} \times \eta_{module} \times 1000\ \text{W/m}^2$$
 
 ---
 
-## 🚀 Quick Setup & Installation
+## 🚀 Setup & Installation
 
-### Prerequisites (Zero-Dependency Setup)
-This guide assumes a clean machine with **no pre-installed tools**.
+### Option A: Quick Install via pip
+```bash
+git clone https://github.com/IamOumarIbrahim/SolarScan.git
+cd SolarScan
+pip install -e .
+```
 
+### Option B: Prerequisites Setup
 ```cmd
 winget install --id Python.Python.3.10 -e --accept-source-agreements --accept-package-agreements
 winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements
 ```
 
 🔍 **Verification Command**:
-```cmd
-python --version
-```
-*Expected Output*: `Python 3.10.x`
-
-### Clone & Install
 ```bash
-git clone https://github.com/IamOumarIbrahim/SolarScan.git
-cd SolarScan
-pip install -r requirements.txt
+py -m solarscan.cli --help
 ```
-
-### Run
-```bash
-python -m solarscan.cli scan "123 Example St, Sharjah, UAE"
-```
+*Expected Output*: `usage: solarscan [-h] {scan,batch} ...`
 
 ---
 
-## 🛠️ How to Use
+## 🖥️ How to Use
 
-1. Run a single-address scan: `solarscan scan "University of Sharjah, Sharjah, UAE" --tilt 15 --rate-aed 0.38`.
-2. Or batch-scan a CSV of addresses: `solarscan batch addresses.csv --out reports/`.
-3. Open the generated PDF in `reports/` — it includes the extracted footprint diagram, sizing table, and payback estimate.
-
+1. Run a single-address scan:
 ```bash
-# Example command
+python -m solarscan.cli scan "University of Sharjah, Sharjah, UAE" --tilt 15 --rate-aed 0.38
+```
+
+2. Run a scan with customized module efficiency and utility tariff:
+```bash
 python -m solarscan.cli scan "Dubai Investment Park 2, Dubai, UAE" --tilt 10 --rate-aed 0.32 --module-efficiency 0.21
 ```
+
+3. Batch-scan a portfolio CSV:
+```bash
+python -m solarscan.cli batch examples/addresses.csv --out reports/
+```
+
+4. Open the generated PDF report in `reports/` to review the footprint diagram, array sizing table, and payback timeline.
 
 ---
 
 ## ⚙️ Configuration
 
-`solarscan.yaml`:
+Default system parameters are configured in `solarscan.yaml`:
 
 ```yaml
 default_tilt_deg: 15
@@ -136,32 +175,58 @@ module_efficiency: 0.20
 dc_ac_ratio: 1.2
 ```
 
-| Field | Description |
-| :--- | :--- |
-| `default_tilt_deg` | Assumed panel tilt used when a roof pitch can't be inferred from OSM data |
-| `setback_m` | Fire-code setback distance subtracted from the footprint perimeter |
-| `module_efficiency` | Panel efficiency used in the DC array capacity calculation |
-| `dc_ac_ratio` | Target DC/AC ratio used to recommend an inverter capacity band |
+| Field | Description | Type | Default |
+| :--- | :--- | :--- | :--- |
+| `default_tilt_deg` | Assumed panel tilt used when roof pitch is unlisted | Float | `15` |
+| `setback_m` | Fire-code setback distance subtracted from perimeter | Float | `1.5` |
+| `module_efficiency` | Panel STC efficiency rating | Float | `0.20` |
+| `dc_ac_ratio` | Target DC/AC ratio for inverter capacity band | Float | `1.2` |
+
+---
+
+## 🔬 Scope & Limitations
+
+- **OSM Data Dependency**: Sizing accuracy relies on OpenStreetMap footprint coverage for the queried location. Unmapped buildings fall back to synthetic default geometry or coordinate overrides (`--lat`/`--lon`).
+- **Shading Analysis**: SolarScan models azimuth and tilt derating, but does not simulate 3D tree or adjacent structure shading shadow patterns.
 
 ---
 
 ## 📁 File Structure
 
+```
 SolarScan/
 ├── solarscan/
-│ ├── osm.py - Overpass API query and footprint parsing
-│ ├── geometry.py - Shoelace area, azimuth, and setback inset logic
-│ ├── sizing.py - DC array and inverter capacity calculations
-│ ├── yield_estimate.py - Annual kWh and payback estimator
-│ └── report.py - PDF report generation
-├── examples/addresses.csv - Sample batch input
-├── tests/ - Pytest suite
-├── solarscan.yaml
+│   ├── __init__.py      - Core package entry
+│   ├── osm.py           - Overpass API query & footprint parsing
+│   ├── geometry.py      - Shoelace area, azimuth & setback logic
+│   ├── sizing.py        - DC array & inverter capacity calculations
+│   ├── yield_estimate.py - Annual kWh & payback estimator
+│   ├── report.py        - Matplotlib diagram & PDF report generation
+│   └── cli.py           - Command-line interface entrypoint
+├── examples/
+│   └── addresses.csv    - Sample batch input file
+├── tests/
+│   ├── test_core.py     - Formula reference & mathematical unit tests
+│   ├── test_config.py   - Configuration defaults & behavior validation
+│   └── test_troubleshooting.py - Edge case & error recovery tests
+├── .github/
+│   └── workflows/
+│       └── ci.yml       - Continuous Integration pipeline
+├── CONTRIBUTING.md      - Contribution guidelines
+├── CODE_OF_CONDUCT.md   - Contributor Code of Conduct
+├── SECURITY.md          - Security disclosure policy
+├── REQUIREMENTS.md      - Specification checklist
+├── VERIFICATION.md      - Verification matrix & evidence log
+├── solarscan.yaml       - System configuration file
+├── setup.py             - Python package manifest
+├── requirements.txt     - Dependency manifest
+├── LICENSE              - CC0 1.0 Universal License
 └── README.md
+```
 
 ---
 
-## 🛠️ Troubleshooting
+## 🩹 Troubleshooting
 
 | Issue | Root Cause | Resolution |
 | :--- | :--- | :--- |
@@ -171,5 +236,43 @@ SolarScan/
 
 ---
 
+## 🚀 Deployment & Releases
+
+SolarScan releases are published via GitHub Releases and automated CI tag builds.
+
+To deploy or release a new version:
+1. Ensure all unit tests pass locally: `py -m pytest`
+2. Tag the release commit: `git tag -a v0.1.0 -m "Release v0.1.0"`
+3. Push tags to GitHub: `git push origin v0.1.0`
+4. GitHub Actions automatically executes test verification and creates a GitHub Release artifact.
+
+---
+
+## 🧩 Contributing
+
+Contributions, bug reports, and feature enhancements are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on code standards, test guidelines, and PR procedures.
+
+---
+
+## 🛡️ Security Policy & Code of Conduct
+
+- **Security Policy**: Read [SECURITY.md](SECURITY.md) to report security concerns.
+- **Code of Conduct**: We adhere to the Contributor Covenant Code of Conduct. Read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+---
+
 ## 📄 License
-This repository is licensed under the [CC0 1.0 Universal (CC0 1.0) Public Domain Dedication](LICENSE).
+
+This repository is dedicated to the public domain under the [CC0 1.0 Universal Public Domain Dedication](LICENSE).
+
+---
+
+## 🙏 Powered By
+
+- [OpenStreetMap Overpass API](https://overpass-api.de/)
+- [ReportLab PDF Library](https://www.reportlab.com/)
+- [Matplotlib](https://matplotlib.org/)
+
+<div align="center">
+  If SolarScan helped automate your PV feasibility reporting, a ⭐ helps others discover it!
+</div>
