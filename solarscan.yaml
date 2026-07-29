@@ -1,0 +1,4 @@
+default_tilt_deg: 15
+setback_m: 1.5
+module_efficiency: 0.20
+dc_ac_ratio: 1.2
