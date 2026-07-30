@@ -11,6 +11,14 @@
 
 <br />
 
+<p align="center">
+  <img src="assets/side_by_side_comparison.png" alt="Google Earth Manual Rooftop Measurement vs SolarScan Automated Feasibility Report" width="100%" />
+  <br />
+  <small>📍 <strong>Side-by-Side Verification</strong>: <a href="https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D">Google Earth Manual Measure (1,699.86 m²)</a> vs. SolarScan Automated Feasibility Report (1,610.02 m² | 272.38 kW DC)</small>
+</p>
+
+<br />
+
 > [!IMPORTANT]
 > **Zero-Dependency Core Setup**: SolarScan queries public OpenStreetMap Overpass data directly and runs locally across Windows, macOS, and Linux with standard Python 3.10+.
 
@@ -98,21 +106,21 @@ Computes the exact roof area from the OSM-tagged polygon vertices, rather than a
 
 $$A = \frac{1}{2}\left|\sum_{i=1}^{n}\left(x_i y_{i+1} - x_{i+1} y_i\right)\right|$$
 
-*Where $(x_i, y_i)$ are the projected coordinates of the building footprint's $n$ vertices returned by OSM.*
+Where $(x_i, y_i)$ are the projected coordinates of the building footprint's $n$ vertices returned by OSM.
 
 ### 2. Usable Roof Area After Setback
 Reduces raw footprint area by fire-code setback and known obstructions before sizing the array.
 
-$$A_{usable} = A - P \cdot s - A_{obstruction}$$
+$$A_{\text{usable}} = A - P \cdot s - A_{\text{obstruction}}$$
 
-*Where $P$ is the footprint perimeter, $s$ is the fire-code setback distance, and $A_{obstruction}$ is the total area of subtracted obstruction tags.*
+Where $P$ is the footprint perimeter, $s$ is the fire-code setback distance, and $A_{\text{obstruction}}$ is the total area of subtracted obstruction tags.
 
 ### 3. DC Array Capacity Sizing
 Converts usable area into a standard-test-condition DC capacity estimate.
 
-$$C_{array} = A_{usable} \times \eta_{module} \times 1000\ \text{W/m}^2$$
+$$C_{\text{array}} = A_{\text{usable}} \times \eta_{\text{module}} \times 1000 \text{ W/m}^2$$
 
-*Where $\eta_{module}$ is the module efficiency (defaults to 20%), consistent with standard commercial PV sizing practice.*
+Where $\eta_{\text{module}}$ is the module efficiency (defaults to 20%), consistent with standard commercial PV sizing practice.
 
 ---
 
@@ -122,13 +130,13 @@ SolarScan's automated feasibility model is built on standard commercial PV engin
 
 | Technology Parameter | Value / Baseline | Details & Specifications |
 | :--- | :--- | :--- |
-| **PV Module Type** | **Monocrystalline Silicon (Mono-Si)** | Standard $400\text{ W}$–$550\text{ W}$ commercial PV modules rated at STC ($1,000\text{ W/m}^2$, $25^\circ\text{C}$, AM 1.5G). |
-| **Module Efficiency ($\eta_{\text{module}}$)** | **$20.0\%$** *(Configurable)* | Baseline module STC conversion efficiency ($0.20\text{ kW/m}^2$). |
-| **Inverter Architecture** | **Commercial String / Central Inverter** | Three-phase $50\text{ kW}$–$110\text{ kW}$ commercial string inverters (e.g., Huawei SUN2000, SMA Sunny Tripower, Sungrow). |
-| **DC/AC Oversizing Ratio** | **$1.20$** ($120\%$ Over-paneling) | Oversizes DC array by $20\%$ relative to AC rating ($P_{\text{AC}} = P_{\text{DC}} / 1.2$) to maximize inverter utilization. |
-| **Solar Resource (PSH)** | **$5.5\text{ kWh/m}^2/\text{day}$** | Default Peak Sun Hours for sunny / high-irradiance regions (e.g. UAE / Middle East / US Sunbelt). |
-| **System Derate / Loss Factor** | **$0.85$** ($15\%$ Total Loss) | Accounts for combined DC/AC wiring loss, thermal derating, inverter inefficiency, and module soiling. |
-| **Turnkey Installed CAPEX** | **$\$1,000 / \text{kW DC}$** | Benchmark commercial turnkey installed system cost used for simple financial payback calculations. |
+| **PV Module Type** | **Monocrystalline Silicon (Mono-Si)** | Standard 400 W – 550 W commercial PV modules rated at STC (1,000 W/m², 25°C, AM 1.5G). |
+| **Module Efficiency ($\eta_{\text{module}}$)** | **20.0%** *(Configurable)* | Baseline module STC conversion efficiency (0.20 kW/m²). |
+| **Inverter Architecture** | **Commercial String / Central Inverter** | Three-phase 50 kW – 110 kW commercial string inverters (e.g., Huawei SUN2000, SMA Sunny Tripower, Sungrow). |
+| **DC/AC Oversizing Ratio** | **1.20** (120% Over-paneling) | Oversizes DC array by 20% relative to AC rating ($P_{\text{AC}} = P_{\text{DC}} / 1.2$) to maximize inverter utilization. |
+| **Solar Resource (PSH)** | **5.5 kWh/m²/day** | Default Peak Sun Hours for sunny / high-irradiance regions (e.g. UAE / Middle East / US Sunbelt). |
+| **System Derate / Loss Factor** | **0.85** (15% Total Loss) | Accounts for combined DC/AC wiring loss, thermal derating, inverter inefficiency, and module soiling. |
+| **Turnkey Installed CAPEX** | **$1,000 / kW DC** | Benchmark commercial turnkey installed system cost used for simple financial payback calculations. |
 
 ---
 
