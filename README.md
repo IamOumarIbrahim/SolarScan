@@ -11,10 +11,6 @@
 
 <br />
 
-<p align="center">
-  <img src="assets/cs_dept_w5_gmaps_report.png" alt="SolarScan Rooftop Solar Feasibility Report - Computer Science Department W5" width="80%" />
-</p>
-
 > [!IMPORTANT]
 > **Zero-Dependency Core Setup**: SolarScan queries public OpenStreetMap Overpass data directly and runs locally across Windows, macOS, and Linux with standard Python 3.10+.
 
