@@ -41,13 +41,13 @@ Automated rooftop solar PV feasibility report generator using OpenStreetMap Over
 ---
 
 ## Table of Contents
-- [What is SolarScan?](#-what-is-solarscan)
-- [Key Features](#-key-features)
+- [What is SolarScan?](#what-is-solarscan)
+- [Key Features](#key-features)
 - [System Architecture](#%EF%B8%8F-system-architecture)
-- [Mathematical Foundations](#-mathematical-foundations)
-- [System Technology Assumptions](#-system-technology-assumptions)
-- [Sample Feasibility Report Showcase](#-sample-feasibility-report-showcase)
-- [Setup & Installation](#-setup--installation)
+- [Mathematical Foundations](#mathematical-foundations)
+- [System Technology Assumptions](#system-technology-assumptions)
+- [Sample Feasibility Report Showcase](#sample-feasibility-report-showcase)
+- [Setup & Installation](#setup--installation)
   - [1-Click Direct Download (.exe)](#option-0-1-click-direct-download-non-technical-users--no-python-required)
   - [Install via pip](#option-a-install-via-pip-python-users)
 - [How to Use](#%EF%B8%8F-how-to-use)
@@ -55,13 +55,13 @@ Automated rooftop solar PV feasibility report generator using OpenStreetMap Over
   - [Scan via Address String](#2-scan-via-address-string)
   - [Batch-Scan Portfolio CSV](#5-batch-scan-a-portfolio-csv-file)
 - [Configuration](#%EF%B8%8F-configuration)
-- [Scope & Limitations](#-scope--limitations)
-- [File Structure](#-file-structure)
-- [Troubleshooting](#-troubleshooting)
-- [Deployment & Releases](#-deployment--releases)
-- [Contributing](#-contributing)
+- [Scope & Limitations](#scope--limitations)
+- [File Structure](#file-structure)
+- [Troubleshooting](#troubleshooting)
+- [Deployment & Releases](#deployment--releases)
+- [Contributing](#contributing)
 - [Security Policy & Code of Conduct](#%EF%B8%8F-security-policy--code-of-conduct)
-- [License](#-license)
+- [License](#license)
 
 ---
 
