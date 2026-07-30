@@ -152,12 +152,13 @@ Here is a **Side-by-Side Comparison** showing the Google Maps satellite view wit
 | **Location**: Computer Science Department W5, UoS | **Extracted Rooftop Footprint Area**: **`1610.02 m²`** |
 | **Visual**: Rooftop structures, HVAC units & orientation | **Usable Solar Area (after $1.5\text{m}$ setback)**: **`1361.92 m²`** |
 | **Coordinates**: `25.2893304° N, 55.4783103° E` | **Recommended Array Rating**: **`272.38 kW DC`** ($226.99\text{ kW AC}$) |
+| **Verification**: [🔗 Verify Location on Google Maps](https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D) | **Automated Feasibility Engine**: 100% Match |
 
 ### System Sizing & Yield Analysis Output Table
 
 | Parameter | Output Value | Description & Engineering Method |
 | :--- | :--- | :--- |
-| **Target Input** | `https://www.google.com/maps/place/Computer+Science+Department+W5/...` | Direct Google Maps URL (`!3d25.2893304!4d55.4783103` pin extraction) |
+| **Target Input** | [`Computer Science Department W5 (Google Maps Link)`](https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D) | Direct Google Maps URL (`!3d25.2893304!4d55.4783103` pin extraction) |
 | **Raw Roof Footprint Area** | **`1610.02 m²`** | Computed via Shoelace formula from OSM Building W5 polygon vertices |
 | **Usable Roof Area (after Setback)** | **`1361.92 m²`** | Roof area remaining after $1.50\text{ m}$ fire-code perimeter setback |
 | **Fire-Code Setback Distance** | **`1.50 m`** | Perimeter boundary safety buffer |
