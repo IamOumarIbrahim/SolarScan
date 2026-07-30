@@ -202,22 +202,34 @@ py -m solarscan.cli --help
 
 ## 🖥️ How to Use
 
-1. Run a single-address scan:
+### 1. Scan via Google Maps URL (Direct Building Pin or Viewport Link)
+Pass any Google Maps URL directly to extract coordinates and analyze the pinned building:
 ```bash
-python -m solarscan.cli scan "University of Sharjah, Sharjah, UAE" --tilt 15 --rate-aed 0.38
+py -m solarscan.cli scan "https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2889483,55.4783323,493m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103"
+```
+*Auto-detects exact building pin (`!3d<lat>!4d<lon>`), shortened links (`maps.app.goo.gl`), or camera viewport centers (`@lat,lon`).*
+
+### 2. Scan via Address String
+```bash
+py -m solarscan.cli scan "University of Sharjah M13, Sharjah, UAE" --tilt 15 --rate-aed 0.38
 ```
 
-2. Run a scan with customized module efficiency and utility tariff:
+### 3. Scan with Custom Efficiency & Tariff Parameters
 ```bash
-python -m solarscan.cli scan "Dubai Investment Park 2, Dubai, UAE" --tilt 10 --rate-aed 0.32 --module-efficiency 0.21
+py -m solarscan.cli scan "Dubai Silicon Oasis, Dubai, UAE" --tilt 10 --rate-aed 0.32 --module-efficiency 0.21
 ```
 
-3. Batch-scan a portfolio CSV:
+### 4. Scan via Explicit Latitude & Longitude Coordinates
 ```bash
-python -m solarscan.cli batch examples/addresses.csv --out reports/
+py -m solarscan.cli scan "Campus Building W5" --lat 25.2893304 --lon 55.4783103
 ```
 
-4. Open the generated PDF report in `reports/` to review the footprint diagram, array sizing table, and payback timeline.
+### 5. Batch-Scan a Portfolio CSV File
+```bash
+py -m solarscan.cli batch examples/uae_showcase_locations.csv --out reports/
+```
+
+6. Open the generated PDF reports in `reports/` to review the footprint diagram, array sizing table, and payback timeline.
 
 ---
 
@@ -254,14 +266,14 @@ dc_ac_ratio: 1.2
 SolarScan/
 ├── solarscan/
 │   ├── __init__.py      - Core package entry
-│   ├── osm.py           - Overpass API query & footprint parsing
+│   ├── osm.py           - Overpass API query, Google Maps URL parser & centroid matching
 │   ├── geometry.py      - Shoelace area, azimuth & setback logic
 │   ├── sizing.py        - DC array & inverter capacity calculations
 │   ├── yield_estimate.py - Annual kWh & payback estimator
 │   ├── report.py        - Matplotlib diagram & PDF report generation
 │   └── cli.py           - Command-line interface entrypoint
 ├── examples/
-│   └── addresses.csv    - Sample batch input file
+│   └── uae_showcase_locations.csv - UAE university campus showcase dataset
 ├── tests/
 │   ├── test_core.py     - Formula reference & mathematical unit tests
 │   ├── test_config.py   - Configuration defaults & behavior validation
