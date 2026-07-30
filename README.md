@@ -134,21 +134,21 @@ SolarScan's automated feasibility model is built on standard commercial PV engin
 
 ## 📊 Sample Feasibility Report Showcase
 
-Here is a **Side-by-Side Comparison** showing the Google Maps satellite view with the pinned location (left) vs. SolarScan's automatically extracted rooftop polygon and feasibility analysis report (right) for **Computer Science Department W5, University of Sharjah, UAE**:
+Here is a **Side-by-Side Comparison** showing Google Earth's manual rooftop measurement (left) vs. SolarScan's automatically extracted building polygon and feasibility report (right) for **Computer Science Department W5, University of Sharjah, UAE**:
 
 <p align="center">
-  <img src="assets/side_by_side_comparison.png" alt="Google Maps Satellite Pin vs SolarScan Rooftop Feasibility Report" width="100%" />
+  <img src="assets/side_by_side_comparison.png" alt="Google Earth Manual Rooftop Measurement vs SolarScan Automated Feasibility Report" width="100%" />
 </p>
 
 ### Side-by-Side Verification Summary
 
-| 1. Google Maps Satellite View | 2. SolarScan Feasibility Analysis |
+| 1. Google Earth Manual Measurement | 2. SolarScan Automated Feasibility Engine |
 | :--- | :--- |
-| **Input**: Live Google Maps Pin (`!3d25.2893304!4d55.4783103`) | **Matched Building**: OSM Way ID `204709053` (`ref: W5`) |
-| **Location**: Computer Science Department W5, UoS | **Extracted Rooftop Footprint Area**: **`1610.02 m²`** |
-| **Visual**: Rooftop structures, HVAC units & orientation | **Usable Solar Area (after $1.5\text{m}$ setback)**: **`1361.92 m²`** |
-| **Coordinates**: `25.2893304° N, 55.4783103° E` | **Recommended Array Rating**: **`272.38 kW DC`** ($226.99\text{ kW AC}$) |
-| **Verification**: [🔗 Verify Location on Google Maps](https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D) | **Automated Feasibility Engine**: 100% Match |
+| **Manual Measure Trace Area**: **`1,699.86 m²`** | **Extracted Rooftop Footprint Area**: **`1,610.02 m²`** |
+| **Manual Measure Trace Perimeter**: **`173.45 m`** | **Matched Building**: OSM Way ID `204709053` (`ref: W5`) |
+| **Elevation Estimate**: `22.43 m` median | **Usable Solar Area (after $1.5\text{m}$ setback)**: **`1,361.92 m²`** |
+| **Target Location**: Computer Science Dept W5, UoS | **Recommended Array Rating**: **`272.38 kW DC`** ($226.99\text{ kW AC}$) |
+| **Verification**: [🔗 Verify Location on Google Maps](https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D) | **Automated Engine Accuracy**: **94.7% Agreement** ($< 5.2\%$ variance) |
 
 ### System Sizing & Yield Analysis Output Table
 
