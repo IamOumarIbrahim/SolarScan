@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solarscan"
+version = "0.5.0"
+description = "Automated Rooftop Solar Feasibility Reports from OpenStreetMap Building Footprints"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "CC0-1.0" }
+dependencies = [
+    "requests>=2.28.0",
+    "numpy>=1.24.0",
+    "pyyaml>=6.0",
+    "matplotlib>=3.7.0",
+    "reportlab>=3.6.0"
+]
+
+[project.scripts]
+solarscan = "solarscan.cli:main"

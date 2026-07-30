@@ -31,6 +31,12 @@
 - **`packages/pv-design`**: Performs detailed electrical array sizing, module counts, string inverter matching, and array capacity calculations.
 - **`packages/sam-export`**: Integrates NREL System Advisor Model (SAM) simulation parameters and renders automated LaTeX & PDF feasibility reports.
 
+```bash
+# Quickstart — Run rooftop feasibility analysis
+pip install -r requirements.txt
+python -m solarscan "Computer Science Department W5 Sharjah"
+```
+
 <br />
 
 ## Repository About & Topics
