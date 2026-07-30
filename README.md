@@ -7,6 +7,10 @@
   [![Platform](https://img.shields.io/badge/Platform-Cross--platform-lightgrey.svg?style=flat-square)](#)
   [![Key Dependency](https://img.shields.io/badge/OSM_Overpass-API-7EBC6F.svg?style=flat-square)](https://overpass-api.de/)
   [![CI](https://github.com/IamOumarIbrahim/SolarScan/actions/workflows/ci.yml/badge.svg)](https://github.com/IamOumarIbrahim/SolarScan/actions)
+  <br />
+  <a href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe">
+    <img src="https://img.shields.io/badge/📥_Download_1--Click_Windows_Installer-v0.5.0_EXE-22c55e.svg?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows Installer" />
+  </a>
 </div>
 
 <br />
@@ -179,7 +183,18 @@ Here is a **Side-by-Side Comparison** showing Google Earth's manual rooftop meas
 
 ## 🚀 Setup & Installation
 
-### Option A: Quick Install via pip
+### Option 0: 1-Click Direct Download (Non-Technical Users — No Python Required)
+If you do not have Python installed or prefer a standalone Windows application:
+
+👉 **[Download SolarScan_Setup_v0.5.0.exe (34 MB)](https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe)**
+
+* **Zero Dependencies**: Bundles Python runtime and all C-extensions out-of-the-box. Upgrades outdated local packages automatically during setup.
+* **Automatic System Integration**: Adds `solarscan` to Windows system `PATH` so non-technical users can open Command Prompt or PowerShell and type `solarscan scan "..."` instantly.
+* **Desktop Shortcuts**: Creates Start Menu & Desktop shortcuts for `SolarScan CLI`.
+
+---
+
+### Option A: Install via pip (Python Users)
 ```bash
 git clone https://github.com/IamOumarIbrahim/SolarScan.git
 cd SolarScan
