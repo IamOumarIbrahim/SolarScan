@@ -16,12 +16,7 @@ import re
 def parse_google_maps_url(text):
     """
     Extracts (lat, lon) tuple from Google Maps URLs, shortened links, or coordinate strings.
-    Supports:
-    - https://www.google.com/maps/@25.28871,55.48051,19z
-    - https://www.google.com/maps/place/.../@25.28871,55.48051,...
-    - https://www.google.com/maps?q=25.28871,55.48051
-    - https://maps.app.goo.gl/... (via HTTP redirect expansion)
-    - Raw lat,lon string: "25.28871, 55.48051"
+    Prioritizes exact building pin coordinates (!3d<lat>!4d<lon>) when present.
     """
     if not text:
         return None
@@ -35,21 +30,30 @@ def parse_google_maps_url(text):
         except Exception:
             pass
 
-    match = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', text)
-    if match:
-        return float(match.group(1)), float(match.group(2))
+    # Priority 1: Exact Pinned Building Location (!3d<lat>!4d<lon>)
+    match_pin = re.search(r'!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)', text)
+    if match_pin:
+        return float(match_pin.group(1)), float(match_pin.group(2))
 
-    match = re.search(r'[?&](?:q|ll)=(-?\d+\.\d+),(-?\d+\.\d+)', text)
-    if match:
-        return float(match.group(1)), float(match.group(2))
+    # Priority 2: Map Viewport / Camera Coordinates (@lat,lon)
+    match_view = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', text)
+    if match_view:
+        return float(match_view.group(1)), float(match_view.group(2))
 
-    match = re.search(r'/(?:place|search)/(-?\d+\.\d+)[,\+]+(-?\d+\.\d+)', text)
-    if match:
-        return float(match.group(1)), float(match.group(2))
+    # Priority 3: Query parameters (q=lat,lon or ll=lat,lon)
+    match_q = re.search(r'[?&](?:q|ll)=(-?\d+\.\d+),(-?\d+\.\d+)', text)
+    if match_q:
+        return float(match_q.group(1)), float(match_q.group(2))
 
-    match = re.search(r'^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$', text)
-    if match:
-        return float(match.group(1)), float(match.group(2))
+    # Priority 4: /place/lat,lon or /search/lat,lon
+    match_p = re.search(r'/(?:place|search)/(-?\d+\.\d+)[,\+]+(-?\d+\.\d+)', text)
+    if match_p:
+        return float(match_p.group(1)), float(match_p.group(2))
+
+    # Priority 5: Raw "lat, lon"
+    match_raw = re.search(r'^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$', text)
+    if match_raw:
+        return float(match_raw.group(1)), float(match_raw.group(2))
 
     return None
 
