@@ -1,3 +1,4 @@
+import math
 import requests
 import json
 import logging
@@ -68,18 +69,24 @@ def query_osm_building(lat, lon, search_radius_m=250):
                 if len(polygon_coords) >= 3:
                     meter_coords = latlon_to_meters(polygon_coords)
                     area = calculate_shoelace_area(meter_coords)
+                    cent_lat = sum(p[0] for p in polygon_coords) / len(polygon_coords)
+                    cent_lon = sum(p[1] for p in polygon_coords) / len(polygon_coords)
+                    dy = (cent_lat - lat) * 111000.0
+                    dx = (cent_lon - lon) * 111000.0 * math.cos(math.radians(lat))
+                    dist_m = math.hypot(dx, dy)
                     valid_candidates.append({
                         "building_id": way["id"],
                         "polygon_coords": polygon_coords,
                         "area": area,
+                        "dist_m": dist_m,
                         "obstruction_area": 0.0
                     })
 
             if valid_candidates:
-                # Sort by rooftop area descending to pick the primary building footprint
-                valid_candidates.sort(key=lambda c: c["area"], reverse=True)
+                # Sort by distance to target GPS point ascending to pick the exact target building footprint
+                valid_candidates.sort(key=lambda c: c["dist_m"])
                 selected = valid_candidates[0]
-                logging.info(f"OSM building polygon retrieved from {mirror_url} (ID: {selected['building_id']}, Area: {selected['area']:.1f}m²)")
+                logging.info(f"OSM building polygon retrieved from {mirror_url} (ID: {selected['building_id']}, Distance: {selected['dist_m']:.1f}m, Area: {selected['area']:.1f}m²)")
                 return {
                     "building_id": selected["building_id"],
                     "polygon_coords": selected["polygon_coords"],
