@@ -11,11 +11,59 @@ OVERPASS_MIRRORS = [
 ]
 
 
+import re
+
+def parse_google_maps_url(text):
+    """
+    Extracts (lat, lon) tuple from Google Maps URLs, shortened links, or coordinate strings.
+    Supports:
+    - https://www.google.com/maps/@25.28871,55.48051,19z
+    - https://www.google.com/maps/place/.../@25.28871,55.48051,...
+    - https://www.google.com/maps?q=25.28871,55.48051
+    - https://maps.app.goo.gl/... (via HTTP redirect expansion)
+    - Raw lat,lon string: "25.28871, 55.48051"
+    """
+    if not text:
+        return None
+        
+    text = text.strip()
+    if "maps.app.goo.gl" in text or "goo.gl/maps" in text:
+        try:
+            r = requests.head(text, allow_redirects=True, timeout=5)
+            if r.url:
+                text = r.url
+        except Exception:
+            pass
+
+    match = re.search(r'@(-?\d+\.\d+),(-?\d+\.\d+)', text)
+    if match:
+        return float(match.group(1)), float(match.group(2))
+
+    match = re.search(r'[?&](?:q|ll)=(-?\d+\.\d+),(-?\d+\.\d+)', text)
+    if match:
+        return float(match.group(1)), float(match.group(2))
+
+    match = re.search(r'/(?:place|search)/(-?\d+\.\d+)[,\+]+(-?\d+\.\d+)', text)
+    if match:
+        return float(match.group(1)), float(match.group(2))
+
+    match = re.search(r'^\s*(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)\s*$', text)
+    if match:
+        return float(match.group(1)), float(match.group(2))
+
+    return None
+
+
 def geocode_address(address):
     """
-    Geocodes an address string to (lat, lon) using OpenStreetMap Nominatim API.
-    Retries across primary and secondary endpoints if needed.
+    Geocodes an address string or Google Maps URL to (lat, lon).
+    Auto-detects Google Maps URLs or raw GPS coordinates.
     """
+    parsed_gmaps = parse_google_maps_url(address)
+    if parsed_gmaps:
+        logging.info(f"Parsed Google Maps coordinates from input: {parsed_gmaps}")
+        return parsed_gmaps
+
     url = "https://nominatim.openstreetmap.org/search"
     headers = {"User-Agent": "SolarScan/1.0"}
     params = {"q": address, "format": "json", "limit": 1}
