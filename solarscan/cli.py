@@ -134,11 +134,16 @@ def main():
             sys.exit(1)
             
         with open(args.csv_file, 'r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
+            rows = [r for r in csv.DictReader(f) if r.get("address")]
+            total = len(rows)
+            print(f"Starting batch scan for {total} location(s)...")
+            for idx, row in enumerate(rows, 1):
                 addr = row.get("address")
-                if addr:
-                    run_scan(address=addr, out_dir=args.out, config_path=args.config)
+                lat = float(row["lat"]) if row.get("lat") and row["lat"].strip() else None
+                lon = float(row["lon"]) if row.get("lon") and row["lon"].strip() else None
+                print(f"\n[{idx}/{total}] Processing '{addr}'...")
+                run_scan(address=addr, lat=lat, lon=lon, out_dir=args.out, config_path=args.config)
+            print(f"\n[COMPLETE] Batch processing finished! Reports saved to '{args.out}'.")
     else:
         parser.print_help()
 
