@@ -26,7 +26,10 @@
 > [!IMPORTANT]
 > **Zero-Dependency Core Setup**: SolarScan queries public OpenStreetMap Overpass data directly and runs locally across Windows, macOS, and Linux with standard Python 3.10+.
 
-SolarScan pulls a building's exact rooftop polygon from OpenStreetMap, estimates usable panel area after applying setback and orientation penalties, and generates a PDF feasibility report — system size, estimated annual yield, and simple payback — without requiring a site visit or a paid tool like Aurora Solar or SAM. It's built on the same rooftop-sizing math used in commercial PV design work, just automated against any address instead of one hand-surveyed site.
+**SolarScan** is an end-to-end solar engineering platform structured into three modular packages:
+- **`packages/feasibility`**: Pulls rooftop polygons from OpenStreetMap, applies setback penalties, and calculates usable solar panel area.
+- **`packages/pv-design`**: Performs detailed electrical array sizing, module counts, string inverter matching, and array capacity calculations.
+- **`packages/sam-export`**: Integrates NREL System Advisor Model (SAM) simulation parameters and renders automated LaTeX & PDF feasibility reports.
 
 <br />
 
