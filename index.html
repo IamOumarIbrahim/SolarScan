@@ -12,13 +12,13 @@
     :root {
       --bg-neumorphic: #e2e8f0;
       --shadow-light: #ffffff;
-      --shadow-dark: #b8c2d0;
-      --text-primary: #1e293b;
-      --text-secondary: #64748b;
+      --shadow-dark: #b6c1d0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
       
       --accent-green: #16a34a;
       --accent-amber: #d97706;
-      --accent-cyan: #0284c7;
+      --accent-cyan: #0891b2;
 
       --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
@@ -36,158 +36,166 @@
 
     .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-    /* Neumorphic Extruded & Sunken Elements */
     .neu-extruded {
       background: var(--bg-neumorphic);
-      box-shadow: 9px 9px 18px var(--shadow-dark), -9px -9px 18px var(--shadow-light);
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      transition: all 0.25s ease;
+      box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .neu-extruded:hover {
-      box-shadow: 12px 12px 24px var(--shadow-dark), -12px -12px 24px var(--shadow-light);
+      box-shadow: 14px 14px 28px var(--shadow-dark), -14px -14px 28px var(--shadow-light);
     }
 
     .neu-sunken {
       background: var(--bg-neumorphic);
-      box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-      border-radius: 16px;
+      box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+      border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.4);
     }
 
     .neu-btn {
       background: var(--bg-neumorphic);
-      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+      box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
       border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.9);
       color: var(--text-primary);
       font-weight: 700;
       font-size: 0.92rem;
-      padding: 12px 24px;
+      padding: 14px 28px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       transition: all 0.2s ease;
       text-decoration: none;
       outline: none;
     }
     .neu-btn:hover {
-      box-shadow: 8px 8px 16px var(--shadow-dark), -8px -8px 16px var(--shadow-light);
+      box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light);
       transform: translateY(-1px);
     }
     .neu-btn:active, .neu-btn.active {
-      box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+      box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
       transform: translateY(1px);
     }
 
     .neu-btn-accent {
       background: linear-gradient(135deg, #16a34a, #15803d);
-      box-shadow: 6px 6px 14px rgba(22, 163, 74, 0.4), -6px -6px 14px var(--shadow-light);
+      box-shadow: 6px 6px 16px rgba(22, 163, 74, 0.4), -6px -6px 16px var(--shadow-light);
       color: #ffffff;
       border: none;
     }
 
+    .glow-dot {
+      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+    }
+    .glow-dot.green { background: #10b981; box-shadow: 0 0 10px #10b981; }
+
     header {
       position: sticky; top: 0; z-index: 100;
-      background: var(--bg-neumorphic);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.4);
-      box-shadow: 0 4px 20px rgba(184, 194, 208, 0.3);
+      background: rgba(226, 232, 240, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 20px rgba(182, 193, 208, 0.35);
     }
-    .nav-container { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+    .nav-container { display: flex; align-items: center; justify-content: space-between; height: 80px; }
     
     .logo {
       display: flex; align-items: center; gap: 14px;
-      font-weight: 800; font-size: 1.2rem; color: var(--text-primary); text-decoration: none;
+      font-weight: 800; font-size: 1.25rem; color: var(--text-primary); text-decoration: none;
     }
     .logo-badge {
-      width: 42px; height: 42px; border-radius: 12px;
+      width: 44px; height: 44px; border-radius: 14px;
       background: var(--bg-neumorphic);
-      box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
     }
 
     .nav-links { display: flex; gap: 16px; list-style: none; }
     .nav-links a {
       color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 600;
-      padding: 8px 16px; border-radius: 10px; transition: all 0.2s ease;
+      padding: 10px 18px; border-radius: 12px; transition: all 0.2s ease;
     }
     .nav-links a:hover { color: var(--text-primary); }
 
-    .hero { padding: 70px 0 50px; text-align: center; }
+    .hero { padding: 80px 0 60px; text-align: center; }
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 20px; border-radius: 999px;
-      font-size: 0.85rem; font-weight: 700; color: var(--accent-green);
-      margin-bottom: 24px;
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 10px 24px; border-radius: 999px;
+      font-size: 0.88rem; font-weight: 700; color: var(--accent-green);
+      margin-bottom: 28px;
     }
     .hero-title {
-      font-size: 3.2rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em;
-      color: var(--text-primary); margin-bottom: 18px;
+      font-size: 3.5rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em;
+      color: var(--text-primary); margin-bottom: 20px;
     }
-    .hero-title span { color: var(--accent-green); }
+    .hero-title span {
+      background: linear-gradient(135deg, #16a34a, #d97706);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
     .hero-subtitle {
-      font-size: 1.2rem; color: var(--text-secondary); max-width: 780px; margin: 0 auto 36px; font-weight: 500;
+      font-size: 1.25rem; color: var(--text-secondary); max-width: 780px; margin: 0 auto 40px; font-weight: 500;
     }
     .hero-cta { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
 
-    .section { padding: 60px 0; }
-    .section-header { text-align: center; margin-bottom: 44px; }
+    .section { padding: 70px 0; }
+    .section-header { text-align: center; margin-bottom: 50px; }
     .section-tag { color: var(--accent-green); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: block; }
-    .section-title { font-size: 2.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
-    .section-desc { color: var(--text-secondary); font-size: 1.05rem; max-width: 660px; margin: 0 auto; }
+    .section-title { font-size: 2.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
+    .section-desc { color: var(--text-secondary); font-size: 1.1rem; max-width: 660px; margin: 0 auto; }
 
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; }
-    .card { padding: 32px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
+    .card { padding: 36px; }
     .card-icon {
-      width: 56px; height: 56px; border-radius: 16px;
+      width: 60px; height: 60px; border-radius: 18px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem; margin-bottom: 20px;
+      font-size: 1.75rem; margin-bottom: 22px;
     }
 
-    .card-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; }
-    .card-text { color: var(--text-secondary); font-size: 0.96rem; line-height: 1.6; }
+    .card-title { font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
+    .card-text { color: var(--text-secondary); font-size: 0.98rem; line-height: 1.6; }
 
-    .sandbox-container { padding: 32px; }
+    .sandbox-container { padding: 36px; }
 
-    .panel-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; }
+    .panel-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 36px; }
     @media (max-width: 900px) { .panel-grid { grid-template-columns: 1fr; } }
 
-    .form-group { margin-bottom: 18px; }
-    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
     
     .form-select, .form-range {
-      width: 100%; padding: 12px 16px; border-radius: 12px;
-      font-family: var(--font-sans); font-size: 0.9rem; color: var(--text-primary);
+      width: 100%; padding: 14px 18px; border-radius: 14px;
+      font-family: var(--font-sans); font-size: 0.92rem; color: var(--text-primary);
       outline: none; border: none;
     }
     .form-range { padding: 0; height: 10px; accent-color: var(--accent-green); }
 
-    .display-box { padding: 24px; display: flex; flex-direction: column; }
+    .display-box { padding: 28px; display: flex; flex-direction: column; }
     .console-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding-bottom: 12px; margin-bottom: 14px; border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      font-weight: 700; font-size: 0.85rem; color: var(--text-secondary);
+      padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      font-weight: 700; font-size: 0.88rem; color: var(--text-secondary);
     }
 
     canvas.solar-canvas {
-      width: 100%; height: 190px; border-radius: 12px; margin-bottom: 16px;
+      width: 100%; height: 200px; border-radius: 14px; margin-bottom: 18px;
     }
 
-    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .metric-card { padding: 12px; text-align: center; }
-    .metric-title { font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 4px; }
-    .metric-value { font-size: 1.15rem; font-weight: 800; color: var(--accent-green); }
+    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .metric-card { padding: 14px; text-align: center; }
+    .metric-title { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 4px; }
+    .metric-value { font-size: 1.2rem; font-weight: 800; color: var(--accent-green); }
 
     .neu-table {
       width: 100%; border-collapse: separate; border-spacing: 0;
-      overflow: hidden; border-radius: 20px; margin-top: 24px;
+      overflow: hidden; border-radius: 24px; margin-top: 24px;
     }
-    .neu-table th, .neu-table td { padding: 18px 24px; text-align: left; }
-    .neu-table th { background: rgba(0, 0, 0, 0.03); color: var(--text-secondary); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; }
-    .neu-table td { border-top: 1px solid rgba(0, 0, 0, 0.04); font-size: 0.95rem; }
+    .neu-table th, .neu-table td { padding: 20px 28px; text-align: left; }
+    .neu-table th { background: rgba(0, 0, 0, 0.03); color: var(--text-secondary); font-size: 0.88rem; font-weight: 800; text-transform: uppercase; }
+    .neu-table td { border-top: 1px solid rgba(0, 0, 0, 0.04); font-size: 0.98rem; }
 
-    footer { padding: 40px 0; text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-top: 40px; }
+    footer { padding: 50px 0; text-align: center; color: var(--text-secondary); font-size: 0.95rem; margin-top: 50px; }
   </style>
 </head>
 <body>
@@ -215,11 +223,11 @@
   <section class="hero">
     <div class="container">
       <div class="hero-badge neu-sunken">
-        ☀️ OpenStreetMap Rooftop Solar Feasibility Engine
+        <span class="glow-dot green"></span> OpenStreetMap Rooftop Solar Feasibility Engine
       </div>
       <h1 class="hero-title">Automated Solar PV Reports from <span>Building Footprints</span></h1>
       <p class="hero-subtitle">
-        A neumorphic, soft-UI engine extracting building polygons from OpenStreetMap to compute usable roof area, array DC capacity, and payback years.
+        An elegant neumorphic single-page engine extracting building polygons from OpenStreetMap to compute usable roof area, array DC capacity, and payback years.
       </p>
       <div class="hero-cta">
         <a href="#simulator" class="neu-btn neu-btn-accent">☀️ Run Feasibility Calculator</a>
@@ -268,7 +276,7 @@
       <div class="sandbox-container neu-extruded">
         <div class="panel-grid">
           <div style="padding: 10px;">
-            <div style="font-weight: 700; margin-bottom: 14px;">🗺️ Target Building Preset</div>
+            <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 16px;">🗺️ Target Building Preset</div>
 
             <div class="form-group">
               <label class="form-label">Select Target Building</label>
@@ -288,7 +296,7 @@
               <input type="range" class="form-range neu-sunken" id="effSlider" min="16.0" max="23.0" step="0.5" value="20.0" oninput="document.getElementById('effVal').innerText = this.value; runSolarScan();">
             </div>
 
-            <button class="neu-btn neu-btn-accent" onclick="runSolarScan()" style="width: 100%; justify-content: center; margin-top: 10px;">☀️ Scan Building Rooftop</button>
+            <button class="neu-btn neu-btn-accent" onclick="runSolarScan()" style="width: 100%; justify-content: center; margin-top: 14px;">☀️ Scan Building Rooftop</button>
           </div>
 
           <div class="display-box neu-sunken">
@@ -297,7 +305,7 @@
               <span>OSM MATCHED</span>
             </div>
 
-            <canvas id="solarCanvas" class="solar-canvas neu-sunken" width="480" height="190"></canvas>
+            <canvas id="solarCanvas" class="solar-canvas neu-sunken" width="480" height="200"></canvas>
 
             <div class="metrics-grid">
               <div class="metric-card neu-extruded">
@@ -331,7 +339,7 @@
         <h2 class="section-title">94.7% Agreement with Manual Measurement</h2>
       </div>
 
-      <div class="neu-extruded" style="padding: 12px;">
+      <div class="neu-extruded" style="padding: 14px;">
         <table class="neu-table">
           <thead>
             <tr>
@@ -396,7 +404,7 @@
       ctx.moveTo(80, 40); ctx.lineTo(400, 40); ctx.lineTo(380, 150); ctx.lineTo(100, 150);
       ctx.closePath(); ctx.stroke();
 
-      ctx.fillStyle = 'rgba(2, 132, 199, 0.4)';
+      ctx.fillStyle = 'rgba(8, 145, 178, 0.4)';
       for (let x = 110; x < 370; x += 18) {
         for (let y = 55; y < 135; y += 12) {
           ctx.fillRect(x, y, 14, 8);
