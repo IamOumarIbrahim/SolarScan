@@ -3,11 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SolarScan — Automated Rooftop Solar Feasibility Reports</title>
-  <meta name="description" content="Automated rooftop solar PV feasibility report generator from OpenStreetMap building footprints, shoelace geometry, fire-code setback modeling, and system sizing." />
+  <title>SolarScan — Automated Rooftop Solar Feasibility</title>
+  <meta name="description" content="Automated rooftop solar PV feasibility report generator from OpenStreetMap building footprints." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- MathJax for rendering LaTeX equations -->
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
   <style>
     :root {
       --bg-light: #f8fafc;
@@ -15,333 +21,193 @@
       --bg-header: #0f172a;
       --border-subtle: #e2e8f0;
       --border-dark: #cbd5e1;
-      
       --accent-green: #16a34a;
-      --accent-emerald: #059669;
       --accent-amber: #d97706;
-      --accent-blue: #2563eb;
-
       --text-main: #0f172a;
       --text-muted: #475569;
-      --text-subtle: #64748b;
-
-      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-sans: 'Inter', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background-color: var(--bg-light);
-      color: var(--text-main);
-      font-family: var(--font-sans);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
+    body { background: var(--bg-light); color: var(--text-main); font-family: var(--font-sans); line-height: 1.5; }
     a { color: var(--accent-green); text-decoration: none; }
-    a:hover, a:focus { text-decoration: underline; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
-    .skip-link {
-      position: absolute; top: -40px; left: 10px; background: var(--accent-green); color: #fff;
-      padding: 8px 16px; font-weight: 700; z-index: 1000; transition: top 0.2s;
-    }
-    .skip-link:focus { top: 10px; }
+    header { background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 0; z-index: 100; }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+    .logo { font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
 
-    .container { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+    .hero { padding: 40px 0 30px; border-bottom: 1px solid var(--border-subtle); background: #fff; }
+    .hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 28px; align-items: center; }
+    @media (max-width: 800px) { .hero-grid { grid-template-columns: 1fr; } }
 
-    /* Header Nav */
-    header {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border-subtle);
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 72px; }
-    .logo-group { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.2rem; color: var(--text-main); }
-    .badge-solar {
-      background: rgba(22, 163, 74, 0.1); color: var(--accent-green);
-      border: 1px solid rgba(22, 163, 74, 0.3); padding: 4px 10px; border-radius: 6px;
-      font-size: 0.78rem; font-family: var(--font-mono); font-weight: 600;
-    }
-    .nav-links { display: flex; gap: 20px; list-style: none; align-items: center; }
-    .nav-links a { color: var(--text-muted); font-size: 0.9rem; font-weight: 500; }
-    .nav-links a:hover { color: var(--text-main); }
-    
-    .btn-github {
-      background: var(--bg-header); color: #fff;
-      padding: 8px 16px; border-radius: 6px; font-size: 0.88rem; font-weight: 600;
-      display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;
-    }
-    .btn-github:hover { background: #1e293b; color: #fff; text-decoration: none; }
+    .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    .hero h1 span { color: var(--accent-green); }
+    .hero p { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 20px; }
 
-    /* 5-Second Test Hero */
-    .hero-section {
-      padding: 60px 0 50px;
-      border-bottom: 1px solid var(--border-subtle);
-      background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
-    }
-    .five-second-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: center; }
-    @media (max-width: 900px) { .five-second-grid { grid-template-columns: 1fr; } }
-
-    .hero-title-group h1 {
-      font-size: 2.8rem; font-weight: 800; line-height: 1.18; letter-spacing: -0.02em; margin-bottom: 18px; color: var(--text-main);
-    }
-    .hero-title-group h1 span { color: var(--accent-green); }
-    .hero-statement {
-      font-size: 1.15rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 24px;
+    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .stat-badge {
+      background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.25);
+      padding: 6px 14px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-green); font-weight: 600;
     }
 
-    .status-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
-    .status-chip {
-      background: #fff; border: 1px solid var(--border-dark);
-      padding: 6px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-muted);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; }
-    .dot.green { background: var(--accent-green); }
-    .dot.amber { background: var(--accent-amber); }
+    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn { padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary { background: var(--accent-green); color: #fff; }
+    .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid var(--border-dark); }
 
-    .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
-    .btn-primary {
-      background: var(--accent-green); color: #fff; padding: 12px 24px; border-radius: 6px;
-      font-weight: 700; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.2s ease;
-      display: inline-flex; align-items: center; gap: 8px;
-    }
-    .btn-primary:hover { background: #15803d; text-decoration: none; }
-    .btn-secondary {
-      background: var(--bg-card); border: 1px solid var(--border-dark); color: var(--text-main);
-      padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 0.95rem; cursor: pointer;
-    }
-    .btn-secondary:hover { border-color: var(--accent-green); text-decoration: none; }
+    .role-box { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; padding: 20px; }
+    .role-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--accent-green); letter-spacing: 0.05em; margin-bottom: 10px; }
+    .role-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+    .role-btn { flex: 1; padding: 8px; background: var(--bg-light); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 0.82rem; font-weight: 600; border-radius: 6px; cursor: pointer; text-align: center; }
+    .role-btn.active { background: rgba(22, 163, 74, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
 
-    /* Role Entry Switcher */
-    .role-switcher-card {
-      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; padding: 24px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-    }
-    .role-switcher-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--accent-green); letter-spacing: 0.08em; margin-bottom: 12px; }
-    .role-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
-    .role-btn {
-      flex: 1; padding: 10px; background: var(--bg-light); border: 1px solid var(--border-subtle);
-      color: var(--text-muted); font-size: 0.88rem; font-weight: 600; border-radius: 6px; cursor: pointer; text-align: center;
-    }
-    .role-btn.active { background: rgba(22, 163, 74, 0.1); border-color: var(--accent-green); color: var(--accent-green); }
-    .role-content { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; }
-    .role-highlight { color: var(--text-main); font-weight: 600; }
+    .section-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin: 40px 0 16px; }
 
-    /* Section Styling */
-    .section-title { font-size: 2.1rem; font-weight: 800; margin-bottom: 8px; color: var(--text-main); }
-    .section-subtitle { color: var(--text-muted); font-size: 1rem; margin-bottom: 32px; }
+    /* Estimator Card */
+    .est-card { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; overflow: hidden; margin-bottom: 40px; }
+    .est-head { background: var(--bg-header); color: #fff; padding: 12px 20px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
+    .est-body { display: grid; grid-template-columns: 280px 1fr; }
+    @media (max-width: 800px) { .est-body { grid-template-columns: 1fr; } }
+    .est-controls { padding: 20px; border-right: 1px solid var(--border-subtle); background: var(--bg-light); }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; font-family: var(--font-mono); }
+    .form-select, .form-range { width: 100%; padding: 8px; background: #fff; border: 1px solid var(--border-dark); color: var(--text-main); border-radius: 6px; font-size: 0.85rem; }
 
-    /* Interactive Estimator Card */
-    .estimator-card {
-      background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 14px; overflow: hidden; margin-bottom: 60px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-    }
-    .estimator-header {
-      background: var(--bg-header); color: #fff; padding: 16px 24px;
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
-    }
-    .estimator-title { font-family: var(--font-mono); font-weight: 700; font-size: 0.95rem; color: #4ade80; }
-    .disclosure-tag { font-size: 0.78rem; color: #fbbf24; font-family: var(--font-mono); background: rgba(251, 191, 36, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(251, 191, 36, 0.3); }
+    canvas.footprint-canvas { width: 100%; height: 190px; background: #0f172a; border-radius: 6px; }
+    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 14px; }
+    .metric-card { background: var(--bg-light); border: 1px solid var(--border-subtle); padding: 10px; border-radius: 6px; text-align: center; }
+    .metric-title { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
+    .metric-val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
 
-    .estimator-grid { display: grid; grid-template-columns: 340px 1fr; }
-    @media (max-width: 960px) { .estimator-grid { grid-template-columns: 1fr; } }
+    /* Table */
+    .table-card { background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-dark); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; }
+    th { background: var(--bg-header); color: #fff; font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; }
 
-    .controls-pane { padding: 24px; border-right: 1px solid var(--border-subtle); background: var(--bg-light); }
-    .form-group { margin-bottom: 20px; }
-    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; }
-    .form-select, .form-range {
-      width: 100%; padding: 10px 12px; background: #fff; border: 1px solid var(--border-dark);
-      color: var(--text-main); border-radius: 6px; font-size: 0.88rem; outline: none;
-    }
-    .form-range { padding: 0; height: 8px; accent-color: var(--accent-green); }
-
-    .results-pane { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
-    canvas.footprint-canvas {
-      width: 100%; height: 210px; background: #0f172a; border-radius: 8px;
-    }
-
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
-    .metric-card { background: var(--bg-light); border: 1px solid var(--border-subtle); padding: 12px; border-radius: 8px; text-align: center; }
-    .metric-title { font-size: 0.75rem; color: var(--text-subtle); font-weight: 700; margin-bottom: 4px; }
-    .metric-val { font-size: 1.15rem; font-weight: 800; color: var(--accent-green); }
-
-    /* Side-by-Side Table */
-    .data-table {
-      width: 100%; border-collapse: collapse; background: var(--bg-card); border-radius: 10px; overflow: hidden; border: 1px solid var(--border-dark);
-    }
-    .data-table th, .data-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid var(--border-subtle); }
-    .data-table th { background: var(--bg-header); color: #fff; font-family: var(--font-mono); font-size: 0.8rem; text-transform: uppercase; }
-    .data-table td { font-size: 0.9rem; }
-
-    .code-box {
-      background: var(--bg-header); border: 1px solid var(--border-dark); border-radius: 8px; padding: 18px;
-      font-family: var(--font-mono); font-size: 0.88rem; color: #f8fafc; position: relative; margin-top: 16px;
-    }
-    .btn-copy {
-      position: absolute; top: 12px; right: 12px; background: rgba(255, 255, 255, 0.15); border: none;
-      color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.78rem; cursor: pointer;
-    }
-    .btn-copy:hover { background: rgba(255, 255, 255, 0.3); }
-
-    footer { border-top: 1px solid var(--border-subtle); padding: 40px 0; color: var(--text-subtle); font-size: 0.88rem; background: var(--bg-card); }
+    .code-box { background: var(--bg-header); border: 1px solid var(--border-dark); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 0.85rem; color: #4ade80; margin-top: 12px; }
+    footer { border-top: 1px solid var(--border-subtle); padding: 30px 0; color: var(--text-muted); font-size: 0.85rem; margin-top: 40px; text-align: center; }
   </style>
 </head>
 <body>
-  <a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <header role="banner">
+  <header>
     <div class="container nav-inner">
-      <div class="logo-group">
-        <span>SolarScan</span>
-        <span class="badge-solar">OSM Solar PV Engine</span>
-      </div>
-      <nav role="navigation" aria-label="Main Navigation">
-        <ul class="nav-links">
-          <li><a href="#estimator">Feasibility Estimator</a></li>
-          <li><a href="#verification">Verification</a></li>
-          <li><a href="#assumptions">Engineering Method</a></li>
-          <li><a href="#quickstart">Quickstart</a></li>
-        </ul>
-      </nav>
-      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" class="btn-github">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        GitHub Repository
-      </a>
+      <div class="logo">☀️ SolarScan</div>
+      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem;">GitHub Code</a>
     </div>
   </header>
 
-  <main id="main-content">
-    <!-- Hero Section (5-Second Test View) -->
-    <section class="hero-section" aria-label="Hero Overview">
-      <div class="container five-second-grid">
-        <div class="hero-title-group">
-          <h1>Automated Rooftop Solar PV Reports from <span>OpenStreetMap Footprints</span></h1>
-          <p class="hero-statement">
-            Replaces manual aerial tracing with automated OpenStreetMap Overpass building polygon extraction, computing setback-aware usable roof area, DC array capacity, annual kWh yield, and SAM PDF reports.
-          </p>
+  <div class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <h1>Automated Rooftop Solar PV Reports from <span>OSM Footprints</span></h1>
+          <p>Extracts OpenStreetMap Overpass building polygons, computes setback-injected roof area, DC array capacity, and annual yield.</p>
 
-          <div class="status-strip" aria-label="Project Status">
-            <span class="status-chip"><span class="dot green"></span> 94.7% Agreement with Manual Tracing</span>
-            <span class="status-chip"><span class="dot amber"></span> Standalone Windows App (.exe) Available</span>
+          <div class="stat-row">
+            <span class="stat-badge">94.7% Agreement with Manual Tracing</span>
+            <span class="stat-badge">Shoelace Area: $A = \frac{1}{2}\sum (x_i y_{i+1} - x_{i+1} y_i)$</span>
           </div>
 
-          <div class="hero-actions">
-            <a href="#estimator" class="btn-primary">☀️ Run Feasibility Estimator</a>
-            <a href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe" class="btn-secondary">📥 Download Windows App (.exe)</a>
+          <div class="btn-group">
+            <a href="#estimator" class="btn btn-primary">☀️ Run Estimator</a>
+            <a href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe" class="btn btn-secondary">📥 Windows App (.exe)</a>
           </div>
         </div>
 
-        <!-- Role Entry Point Switcher -->
-        <div class="role-switcher-card" aria-label="Select Entry Role">
-          <div class="role-switcher-title">Select Visitor Focus</div>
-          <div class="role-tabs" role="tablist">
-            <button role="tab" aria-selected="true" class="role-btn active" id="tab-dev" onclick="setRole('dev')">Solar Developer</button>
-            <button role="tab" aria-selected="false" class="role-btn" id="tab-portfolio" onclick="setRole('portfolio')">Portfolio Manager</button>
+        <div class="role-box">
+          <div class="role-title">Select Focus Role</div>
+          <div class="role-btns">
+            <button class="role-btn active" id="btn-dev" onclick="setRole('dev')">Solar Developer</button>
+            <button class="role-btn" id="btn-portfolio" onclick="setRole('portfolio')">Portfolio Manager</button>
           </div>
-          <div class="role-content" id="roleText">
-            <span class="role-highlight">Focus:</span> Usable roof geometry after $1.50\text{m}$ fire-code setback insets, Shoelace formula footprint area ($A = \frac{1}{2}\sum (x_i y_{i+1} - x_{i+1} y_i)$), Mono-Si module efficiency ($20.0\%$), and $1.20$ DC/AC oversizing ratio.
+          <div id="roleDesc" style="font-size: 0.88rem; color: var(--text-muted);">
+            Computes usable roof geometry after $1.50\text{m}$ fire-code setback insets, Mono-Si module efficiency ($20.0\%$), and $1.20$ DC/AC oversizing ratio.
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Interactive Footprint Estimator -->
-    <section id="estimator" class="container" style="padding-top: 60px;">
-      <h2 class="section-title">Footprint-to-Report Interactive Estimator</h2>
-      <p class="section-subtitle">Adjust setback distances, panel efficiency, and electricity tariffs to update the rooftop array sizing in real time.</p>
+    <!-- Estimator Section -->
+    <h2 class="section-title" id="estimator">Rooftop Solar Feasibility Estimator</h2>
+    <div class="est-card">
+      <div class="est-head">
+        <span style="color: #4ade80;">solarscan://feasibility-engine + osm-overpass</span>
+        <span style="color: #fbbf24; font-size: 0.78rem;">OSM WAY 204709053 FIXTURE</span>
+      </div>
 
-      <div class="estimator-card" aria-label="Interactive Solar Estimator">
-        <div class="estimator-header">
-          <span class="estimator-title">solarscan://feasibility-engine + osm-overpass</span>
-          <span class="disclosure-tag">VERIFIED CASE STUDY FIXTURE: OSM WAY 204709053</span>
-        </div>
-
-        <div class="estimator-grid">
-          <!-- Controls Pane -->
-          <div class="controls-pane">
-            <div class="form-group">
-              <label for="bldgPreset" class="form-label">Target Building Fixture</label>
-              <select id="bldgPreset" class="form-select" onchange="runSolarScan()">
-                <option value="cs_w5">Computer Science Dept W5, Sharjah (1,610.02 m²)</option>
-                <option value="commercial">Commercial Hub Building, Dubai (2,450.00 m²)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="setbackSlider" class="form-label">Fire-Code Setback Buffer: <span id="setbackLabel">1.50</span> m</label>
-              <input type="range" id="setbackSlider" class="form-range" min="0.5" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('setbackLabel').innerText = parseFloat(this.value).toFixed(2); runSolarScan();">
-            </div>
-
-            <div class="form-group">
-              <label for="effSlider" class="form-label">Module Efficiency: <span id="effLabel">20.0</span>%</label>
-              <input type="range" id="effSlider" class="form-range" min="16.0" max="23.0" step="0.5" value="20.0" oninput="document.getElementById('effLabel').innerText = parseFloat(this.value).toFixed(1); runSolarScan();">
-            </div>
-
-            <div class="form-group">
-              <label for="rateSlider" class="form-label">Grid Tariff: <span id="rateLabel">0.38</span> AED/kWh</label>
-              <input type="range" id="rateSlider" class="form-range" min="0.20" max="0.60" step="0.01" value="0.38" oninput="document.getElementById('rateLabel').innerText = parseFloat(this.value).toFixed(2); runSolarScan();">
-            </div>
-
-            <button class="btn-primary" onclick="runSolarScan()" style="width: 100%; justify-content: center; margin-top: 10px;">☀️ Re-Calculate Array Sizing</button>
+      <div class="est-body">
+        <div class="est-controls">
+          <div class="form-group">
+            <label class="form-label">Target Building</label>
+            <select id="bldg" class="form-select" onchange="runSolarScan()">
+              <option value="cs_w5">CS Dept W5, Sharjah (1,610.02 m²)</option>
+              <option value="commercial">Commercial Hub, Dubai (2,450.00 m²)</option>
+            </select>
           </div>
 
-          <!-- Results Pane -->
-          <div class="results-pane">
-            <canvas id="solarCanvas" class="footprint-canvas" width="600" height="210" aria-label="Rooftop Footprint Array Visualizer"></canvas>
+          <div class="form-group">
+            <label class="form-label">Setback Buffer: <span id="setbackLabel">1.50</span>m</label>
+            <input type="range" id="setback" class="form-range" min="0.5" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('setbackLabel').innerText = parseFloat(this.value).toFixed(2); runSolarScan();">
+          </div>
 
-            <div class="metrics-grid">
-              <div class="metric-card">
-                <div class="metric-title">RECOMMENDED DC ARRAY</div>
-                <div class="metric-val" id="valDc">272.38 kW DC</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-title">INVERTER BAND (1.20 DC/AC)</div>
-                <div class="metric-val" id="valAc">226.99 kW AC</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-title">ESTIMATED YIELD</div>
-                <div class="metric-val" id="valKwh">232,394 kWh/yr</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-title">SIMPLE PAYBACK</div>
-                <div class="metric-val" id="valPayback">3.08 Years</div>
-              </div>
+          <div class="form-group">
+            <label class="form-label">Panel Efficiency: <span id="effLabel">20.0</span>%</label>
+            <input type="range" id="eff" class="form-range" min="16.0" max="23.0" step="0.5" value="20.0" oninput="document.getElementById('effLabel').innerText = parseFloat(this.value).toFixed(1); runSolarScan();">
+          </div>
+
+          <button class="btn btn-primary" onclick="runSolarScan()" style="width: 100%; justify-content: center; margin-top: 10px;">☀️ Re-Calculate</button>
+        </div>
+
+        <div style="padding: 20px;">
+          <canvas id="solarCanvas" class="footprint-canvas" width="600" height="190"></canvas>
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-title">RECOMMENDED DC ARRAY</div>
+              <div class="metric-val" id="valDc">272.38 kW DC</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">INVERTER (1.20 DC/AC)</div>
+              <div class="metric-val" id="valAc">226.99 kW AC</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">ANNUAL YIELD</div>
+              <div class="metric-val" id="valKwh">232,394 kWh/yr</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-title">SIMPLE PAYBACK</div>
+              <div class="metric-val" id="valPayback">3.08 Years</div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- Verification Table Section -->
-    <section id="verification" class="container" style="padding-bottom: 60px;">
-      <h2 class="section-title">Side-by-Side Verification (Computer Science Dept W5)</h2>
-      <p class="section-subtitle">Comparison between manual satellite measurement and SolarScan automated OSM engine output.</p>
-
-      <table class="data-table" aria-label="Side by Side Verification Table">
+    <!-- Verification Table -->
+    <h2 class="section-title">Side-by-Side Case Study Verification</h2>
+    <div class="table-card">
+      <table>
         <thead>
           <tr>
-            <th scope="col">Parameter</th>
-            <th scope="col">Google Earth Manual Tracing</th>
-            <th scope="col">SolarScan Automated Footprint Engine</th>
+            <th>Parameter</th>
+            <th>Google Earth Manual Tracing</th>
+            <th>SolarScan Footprint Engine</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>Rooftop Trace Area</strong></td>
             <td><code>1,699.86 m²</code> (Manual click trace)</td>
-            <td><strong style="color: var(--accent-green);"><code>1,610.02 m²</code> (Shoelace polygon formula)</strong></td>
-          </tr>
-          <tr>
-            <td><strong>Perimeter Trace</strong></td>
-            <td><code>173.45 m</code></td>
-            <td><code>165.40 m</code> (OSM Way ID <code>204709053</code>)</td>
+            <td><strong style="color: var(--accent-green);"><code>1,610.02 m²</code> (Shoelace formula)</strong></td>
           </tr>
           <tr>
             <td><strong>Usable Area (1.50m Setback)</strong></td>
             <td>Manual calculation required</td>
-            <td><strong style="color: var(--accent-green);">1,361.92 m² usable area</strong></td>
+            <td><strong style="color: var(--accent-green);">1,361.92 m² usable roof area</strong></td>
           </tr>
           <tr>
             <td><strong>Engine Agreement Accuracy</strong></td>
@@ -350,92 +216,40 @@
           </tr>
         </tbody>
       </table>
-    </section>
-
-    <!-- Engineering Method & Assumptions -->
-    <section id="assumptions" class="container" style="padding-bottom: 60px;">
-      <h2 class="section-title">Engineering Baseline Parameters</h2>
-      <p class="section-subtitle">Default commercial technical specifications used in feasibility sizing calculations.</p>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 20px; border-radius: 10px;">
-          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-green); font-weight: 700;">MODULE EFFICIENCY</div>
-          <div style="font-size: 1.3rem; font-weight: 800; margin: 4px 0;">20.0% STC Rating</div>
-          <div style="font-size: 0.88rem; color: var(--text-muted);">Monocrystalline silicon commercial modules (0.20 kW/m²).</div>
-        </div>
-
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 20px; border-radius: 10px;">
-          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-green); font-weight: 700;">DC/AC OVERSIZING RATIO</div>
-          <div style="font-size: 1.3rem; font-weight: 800; margin: 4px 0;">1.20 (120% Over-panel)</div>
-          <div style="font-size: 0.88rem; color: var(--text-muted);">Optimizes string inverter rating ($P_{\text{AC}} = P_{\text{DC}} / 1.2$).</div>
-        </div>
-
-        <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); padding: 20px; border-radius: 10px;">
-          <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-green); font-weight: 700;">SOLAR RESOURCE</div>
-          <div style="font-size: 1.3rem; font-weight: 800; margin: 4px 0;">5.5 PSH &bull; 0.85 Loss</div>
-          <div style="font-size: 0.88rem; color: var(--text-muted);">Peak Sun Hours for sunny regions with 15% combined system losses.</div>
-        </div>
-      </div>
-
-      <!-- Preliminary Disclaimer -->
-      <div style="margin-top: 24px; background: rgba(217, 119, 6, 0.08); border: 1px solid rgba(217, 119, 6, 0.2); border-radius: 10px; padding: 20px;">
-        <h3 style="font-size: 1rem; color: var(--accent-amber); font-weight: 700; margin-bottom: 6px;">Preliminary Feasibility Disclaimer</h3>
-        <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">
-          SolarScan output represents automated preliminary feasibility analysis based on public 2D OpenStreetMap building footprints. On-site structural engineering inspection, shading analysis, and local utility interconnection sign-off are required before final project procurement.
-        </p>
-      </div>
-    </section>
-
-    <!-- Verified Quickstart Commands -->
-    <section id="quickstart" class="container" style="padding-bottom: 80px;">
-      <h2 class="section-title">Verified First Command</h2>
-      <p class="section-subtitle">Run rooftop solar feasibility analysis directly from Command Prompt or terminal.</p>
-
-      <div class="code-box">
-        <button class="btn-copy" onclick="navigator.clipboard.writeText('python -m solarscan \"Computer Science Department W5 Sharjah\"')">Copy Command</button>
-        <span style="color: #64748b;"># 1. Run rooftop feasibility analysis on building query</span><br>
-        <span style="color: #4ade80;">python</span> -m solarscan "Computer Science Department W5 Sharjah"
-      </div>
-
-      <div class="code-box" style="margin-top: 14px;">
-        <button class="btn-copy" onclick="navigator.clipboard.writeText('py -m pytest -v')">Copy Command</button>
-        <span style="color: #64748b;"># 2. Run Pytest verification test suite (26 passing tests)</span><br>
-        <span style="color: #4ade80;">py</span> -m pytest -v
-      </div>
-    </section>
-  </main>
-
-  <footer role="contentinfo">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
-      <div>SolarScan PV Feasibility Engine &bull; Oumar Ibrahim &bull; CC0 1.0 Public Domain</div>
-      <div><a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank">View Repository on GitHub</a></div>
     </div>
+
+    <!-- Quickstart -->
+    <h2 class="section-title" id="quickstart">Verified Quickstart</h2>
+    <div class="code-box">
+      # Run solar feasibility analysis on building query<br>
+      python -m solarscan "Computer Science Department W5 Sharjah"
+    </div>
+  </div>
+
+  <footer>
+    SolarScan Engine &bull; Oumar Ibrahim &bull; CC0 Public Domain
   </footer>
 
   <script>
     function setRole(role) {
-      document.getElementById('tab-dev').classList.remove('active');
-      document.getElementById('tab-portfolio').classList.remove('active');
-      document.getElementById('tab-dev').setAttribute('aria-selected', 'false');
-      document.getElementById('tab-portfolio').setAttribute('aria-selected', 'false');
+      document.getElementById('btn-dev').classList.remove('active');
+      document.getElementById('btn-portfolio').classList.remove('active');
+      const desc = document.getElementById('roleDesc');
 
-      const el = document.getElementById('roleText');
       if (role === 'dev') {
-        document.getElementById('tab-dev').classList.add('active');
-        document.getElementById('tab-dev').setAttribute('aria-selected', 'true');
-        el.innerHTML = '<span class="role-highlight">Focus:</span> Usable roof geometry after $1.50\\text{m}$ fire-code setback insets, Shoelace formula footprint area ($A = \\frac{1}{2}\\sum (x_i y_{i+1} - x_{i+1} y_i)$), Mono-Si module efficiency ($20.0\\%$), and $1.20$ DC/AC oversizing ratio.';
+        document.getElementById('btn-dev').classList.add('active');
+        desc.innerHTML = 'Computes usable roof geometry after $1.50\\text{m}$ fire-code setback insets, Mono-Si module efficiency ($20.0\\%$), and $1.20$ DC/AC oversizing ratio.';
       } else {
-        document.getElementById('tab-portfolio').classList.add('active');
-        document.getElementById('tab-portfolio').setAttribute('aria-selected', 'true');
-        el.innerHTML = '<span class="role-highlight">Focus:</span> Google Maps URL / address batch CSV processing, annual energy yield (232,394 kWh/yr), local tariff savings, payback estimates (3.08 years), and client-ready PDF feasibility reports.';
+        document.getElementById('btn-portfolio').classList.add('active');
+        desc.innerHTML = 'Batch CSV building processing, annual energy yield ($232,394\\text{ kWh/yr}$), payback estimates ($3.08\\text{ years}$), and client PDF reports.';
       }
+      if (window.MathJax) MathJax.typesetPromise();
     }
 
     function runSolarScan() {
-      const bldg = document.getElementById('bldgPreset').value;
-      const setback = parseFloat(document.getElementById('setbackSlider').value);
-      const eff = parseFloat(document.getElementById('effSlider').value) / 100.0;
-      const rate = parseFloat(document.getElementById('rateSlider').value);
+      const bldg = document.getElementById('bldg').value;
+      const setback = parseFloat(document.getElementById('setback').value);
+      const eff = parseFloat(document.getElementById('eff').value) / 100.0;
 
       let rawArea = bldg === 'commercial' ? 2450.0 : 1610.02;
       let perimeter = bldg === 'commercial' ? 210.0 : 165.4;
@@ -444,46 +258,34 @@
       const dcKw = usableArea * eff;
       const acKw = dcKw / 1.20;
       const annualKwh = dcKw * 5.5 * 365 * 0.6348 * 0.85;
-      const annualSavings = annualKwh * rate;
-      const capex = dcKw * 1000;
-      const payback = annualSavings > 0 ? (capex / annualSavings) : 0;
+      const payback = (dcKw * 1000) / (annualKwh * 0.38);
 
       document.getElementById('valDc').innerText = `${dcKw.toFixed(2)} kW DC`;
       document.getElementById('valAc').innerText = `${acKw.toFixed(2)} kW AC`;
       document.getElementById('valKwh').innerText = `${Math.round(annualKwh).toLocaleString()} kWh/yr`;
-      document.getElementById('valPayback').innerText = `${payback.toFixed(2)} Years`;
+      document.getElementById('valPayback').innerText = `${payback.toFixed(2)} Yrs`;
 
-      drawSolarCanvas(rawArea, setback);
+      drawSolarCanvas(setback);
+      if (window.MathJax) MathJax.typesetPromise();
     }
 
-    function drawSolarCanvas(area, setback) {
+    function drawSolarCanvas(setback) {
       const canvas = document.getElementById('solarCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
 
-      ctx.fillStyle = '#0f172a';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Outer Footprint Polygon
-      ctx.strokeStyle = '#4ade80';
-      ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(80, 40); ctx.lineTo(500, 40); ctx.lineTo(470, 170); ctx.lineTo(110, 170);
-      ctx.closePath(); ctx.stroke();
+      ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(80, 35); ctx.lineTo(500, 35); ctx.lineTo(470, 155); ctx.lineTo(110, 155); ctx.closePath(); ctx.stroke();
 
-      // Draw Setback Line (Amber dashed)
       const inset = setback * 7;
-      ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-      ctx.beginPath();
-      ctx.moveTo(80 + inset, 40 + inset); ctx.lineTo(500 - inset, 40 + inset);
-      ctx.lineTo(470 - inset, 170 - inset); ctx.lineTo(110 + inset, 170 - inset);
-      ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
+      ctx.beginPath(); ctx.moveTo(80+inset, 35+inset); ctx.lineTo(500-inset, 35+inset); ctx.lineTo(470-inset, 155-inset); ctx.lineTo(110+inset, 155-inset); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
 
-      // Draw Solar PV Panels Grid
       ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
-      for (let x = 120 + inset; x < 460 - inset; x += 18) {
-        for (let y = 55 + inset; y < 155 - inset; y += 12) {
+      for (let x = 120+inset; x < 460-inset; x += 18) {
+        for (let y = 45+inset; y < 145-inset; y += 12) {
           ctx.fillRect(x, y, 14, 8);
         }
       }
