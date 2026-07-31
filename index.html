@@ -1,320 +1,405 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';" />
-  <title>SolarScan — Automated Rooftop Solar Feasibility</title>
-  <meta name="description" content="Automated rooftop solar PV feasibility report generator from OpenStreetMap building footprints." />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <!-- MathJax for rendering LaTeX equations -->
-  <script>
-    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] } };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
-  <style>
-    :root {
-      --bg-light: #f8fafc;
-      --bg-card: #ffffff;
-      --bg-header: #0f172a;
-      --border-subtle: #e2e8f0;
-      --border-dark: #cbd5e1;
-      --accent-green: #16a34a;
-      --accent-amber: #d97706;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --font-sans: 'Inter', system-ui, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg-light); color: var(--text-main); font-family: var(--font-sans); line-height: 1.5; }
-    a { color: var(--accent-green); text-decoration: none; }
-    a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent-green); outline-offset: 2px; }
-
-    .skip-link { position: absolute; top: -40px; left: 10px; background: var(--accent-green); color: #fff; padding: 8px 16px; font-weight: 700; z-index: 1000; transition: top 0.2s; }
-    .skip-link:focus { top: 10px; }
-
-    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-
-    header { background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 0; z-index: 100; }
-    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
-    .logo { font-weight: 800; font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-
-    .hero { padding: 40px 0 30px; border-bottom: 1px solid var(--border-subtle); background: #fff; }
-    .hero-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 28px; align-items: center; }
-    @media (max-width: 800px) { .hero-grid { grid-template-columns: 1fr; } }
-
-    .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
-    .hero h1 span { color: var(--accent-green); }
-    .hero p { font-size: 1.05rem; color: var(--text-muted); margin-bottom: 20px; }
-
-    .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
-    .stat-badge {
-      background: rgba(22, 163, 74, 0.08); border: 1px solid rgba(22, 163, 74, 0.25);
-      padding: 6px 14px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-green); font-weight: 600;
-    }
-
-    .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn { padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; }
-    .btn-primary { background: var(--accent-green); color: #fff; }
-    .btn-primary:hover { background: #15803d; }
-    .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid var(--border-dark); }
-    .btn-secondary:hover { border-color: var(--accent-green); }
-
-    .role-box { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; padding: 20px; }
-    .role-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--accent-green); letter-spacing: 0.05em; margin-bottom: 10px; }
-    .role-btns { display: flex; gap: 8px; margin-bottom: 12px; }
-    .role-btn { flex: 1; padding: 8px; background: var(--bg-light); border: 1px solid var(--border-subtle); color: var(--text-muted); font-size: 0.82rem; font-weight: 600; border-radius: 6px; cursor: pointer; text-align: center; }
-    .role-btn.active { background: rgba(22, 163, 74, 0.15); border-color: var(--accent-green); color: var(--accent-green); }
-
-    .section-title { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin: 40px 0 16px; }
-
-    /* Estimator Card */
-    .est-card { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; overflow: hidden; margin-bottom: 40px; }
-    .est-head { background: var(--bg-header); color: #fff; padding: 12px 20px; font-family: var(--font-mono); font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; }
-    .est-body { display: grid; grid-template-columns: 280px 1fr; }
-    @media (max-width: 800px) { .est-body { grid-template-columns: 1fr; } }
-    .est-controls { padding: 20px; border-right: 1px solid var(--border-subtle); background: var(--bg-light); }
-    .form-group { margin-bottom: 14px; }
-    .form-label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; font-family: var(--font-mono); }
-    .form-select, .form-range { width: 100%; padding: 8px; background: #fff; border: 1px solid var(--border-dark); color: var(--text-main); border-radius: 6px; font-size: 0.85rem; }
-
-    canvas.footprint-canvas { width: 100%; height: 190px; background: #0f172a; border-radius: 6px; }
-    .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-top: 14px; }
-    .metric-card { background: var(--bg-light); border: 1px solid var(--border-subtle); padding: 10px; border-radius: 6px; text-align: center; }
-    .metric-title { font-size: 0.72rem; color: var(--text-muted); font-weight: 700; }
-    .metric-val { font-size: 1.1rem; font-weight: 800; color: var(--accent-green); }
-
-    /* Table */
-    .table-card { background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border-dark); overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; }
-    th { background: var(--bg-header); color: #fff; font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; }
-
-    .code-box { background: var(--bg-header); border: 1px solid var(--border-dark); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 0.85rem; color: #4ade80; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; }
-    .copy-btn { background: rgba(255, 255, 255, 0.15); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-family: var(--font-sans); }
-    .copy-btn:hover { background: rgba(255, 255, 255, 0.3); }
-
-    footer { border-top: 1px solid var(--border-subtle); padding: 30px 0; color: var(--text-muted); font-size: 0.85rem; margin-top: 40px; text-align: center; }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>SolarScan — First-pass rooftop solar reports from OpenStreetMap</title>
+  <meta name="description" content="Turn an address, Google Maps link, or coordinates into an OpenStreetMap-based rooftop solar feasibility estimate and local PDF report.">
+  <meta name="theme-color" content="#07111f">
+  <link rel="canonical" href="https://iamoumaribrahim.github.io/SolarScan/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SolarScan — First-pass rooftop solar reports">
+  <meta property="og:description" content="Open-source Python screening for OSM roof geometry, DC/AC sizing, annual yield, payback, and local PDF reports.">
+  <meta property="og:url" content="https://iamoumaribrahim.github.io/SolarScan/">
+  <meta property="og:image" content="https://iamoumaribrahim.github.io/SolarScan/assets/og-solarscan.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="SolarScan scanning a rooftop footprint with the headline First-pass rooftop solar reports from OpenStreetMap.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="SolarScan — First-pass rooftop solar reports">
+  <meta name="twitter:description" content="Screen an OSM building footprint, estimate solar capacity, and export a local PDF.">
+  <meta name="twitter:image" content="https://iamoumaribrahim.github.io/SolarScan/assets/og-solarscan.png">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/site.js" defer></script>
 </head>
 <body>
-  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <header role="banner">
-    <div class="container nav-inner">
-      <div class="logo">☀️ SolarScan</div>
-      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem;">GitHub Code</a>
-    </div>
+  <header class="site-header">
+    <nav class="nav shell" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="SolarScan home">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>SolarScan</span>
+      </a>
+      <div class="nav-links">
+        <a href="#use-cases">Use cases</a>
+        <a href="#evidence">Evidence</a>
+        <a href="#estimator">Estimator</a>
+        <a href="#install">Install</a>
+      </div>
+      <a class="button button-small button-ghost" href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" rel="noopener noreferrer">
+        View on GitHub <span aria-hidden="true">↗</span>
+      </a>
+    </nav>
   </header>
 
-  <main id="main-content" class="container">
-    <!-- Hero -->
-    <section class="hero">
-      <div class="hero-grid">
-        <div>
-          <h1>Automated Rooftop Solar PV Reports from <span>OSM Footprints</span></h1>
-          <p>Extracts OpenStreetMap Overpass building polygons, computes setback-injected roof area, DC array capacity, and annual yield.</p>
-
-          <div class="stat-row">
-            <span class="stat-badge">94.7% Agreement with Manual Tracing</span>
-            <span class="stat-badge">Shoelace Area: $A = \frac{1}{2}\sum (x_i y_{i+1} - x_{i+1} y_i)$</span>
+  <main id="main">
+    <section class="hero" id="top">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="shell hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="signal-dot"></span> Open Python · OSM footprints · Local PDF</p>
+          <h1>Turn a building footprint into a <span>first-pass solar report.</span></h1>
+          <p class="hero-lede">
+            SolarScan takes an address, Google Maps link, or coordinates and produces an
+            OpenStreetMap-based roof estimate, DC/AC sizing, annual yield, simple payback,
+            and a reviewable PDF.
+          </p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="#estimator">Try the estimator <span aria-hidden="true">↓</span></a>
+            <a class="button button-secondary" href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe">
+              Download for Windows
+            </a>
           </div>
-
-          <div class="btn-group">
-            <a href="#estimator" class="btn btn-primary">☀️ Run Estimator</a>
-            <a href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe" class="btn btn-secondary">📥 Windows App (.exe)</a>
-          </div>
+          <ul class="proof-points" aria-label="Project qualities">
+            <li><span aria-hidden="true">✓</span> Runs locally</li>
+            <li><span aria-hidden="true">✓</span> Python 3.10+</li>
+            <li><span aria-hidden="true">✓</span> CC0 public domain</li>
+          </ul>
         </div>
 
-        <div class="role-box">
-          <div class="role-title">Select Focus Role</div>
-          <div class="role-btns" role="tablist">
-            <button role="tab" aria-selected="true" class="role-btn active" id="btn-dev" onclick="setRole('dev')">Solar Developer</button>
-            <button role="tab" aria-selected="false" class="role-btn" id="btn-portfolio" onclick="setRole('portfolio')">Portfolio Manager</button>
+        <figure class="hero-output">
+          <div class="window-bar">
+            <div class="window-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+            <span>repository output · W5 case</span>
           </div>
-          <div id="roleDesc" style="font-size: 0.88rem; color: var(--text-muted);">
-            Computes usable roof geometry after $1.50\text{m}$ fire-code setback insets, Mono-Si module efficiency ($20.0\%$), and $1.20$ DC/AC oversizing ratio.
+          <div class="report-preview">
+            <img
+              src="assets/cs_dept_w5_gmaps_report.png"
+              alt="SolarScan PDF report for the Computer Science Department W5 case"
+              width="1700"
+              height="2200"
+            >
+            <div class="scan-line" aria-hidden="true"></div>
+          </div>
+          <figcaption>
+            <span><strong>272.38 kW DC</strong> estimated array</span>
+            <span><strong>232,395 kWh/yr</strong> modeled yield</span>
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="proof-strip" aria-label="Repository summary">
+      <div class="shell proof-grid">
+        <div><strong>3</strong><span>input paths: address, link, coordinates</span></div>
+        <div><strong>1</strong><span>command from location to PDF report</span></div>
+        <div><strong>94.7%</strong><span>area ratio in one documented comparison</span></div>
+        <div><strong>0</strong><span>cloud accounts required to run locally</span></div>
+      </div>
+    </section>
+
+    <section class="section shell" id="use-cases">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Pick your outcome</p>
+          <h2>Useful before the detailed design starts.</h2>
+        </div>
+        <p>
+          SolarScan is for early screening: enough structure to compare roofs and create
+          a conversation, without pretending an OSM polygon is a site survey.
+        </p>
+      </div>
+
+      <div class="use-grid">
+        <article class="use-card">
+          <span class="card-number">01</span>
+          <p class="card-label">Solar pre-sales</p>
+          <h3>Qualify one roof faster</h3>
+          <p>Start from a location and produce a consistent first-pass capacity, yield, and payback summary.</p>
+          <ul>
+            <li>Address or map-link input</li>
+            <li>Configurable tariff and assumptions</li>
+            <li>PDF for internal review</li>
+          </ul>
+        </article>
+
+        <article class="use-card">
+          <span class="card-number">02</span>
+          <p class="card-label">Portfolio triage</p>
+          <h3>Screen a CSV of buildings</h3>
+          <p>Run the same local workflow across multiple addresses before choosing where manual effort goes.</p>
+          <ul>
+            <li>One report per CSV row</li>
+            <li>Repeatable configuration</li>
+            <li>No hosted project account</li>
+          </ul>
+        </article>
+
+        <article class="use-card">
+          <span class="card-number">03</span>
+          <p class="card-label">Engineering review</p>
+          <h3>Inspect every assumption</h3>
+          <p>Keep geometry, sizing, loss, tariff, and payback inputs visible instead of hiding them behind a score.</p>
+          <ul>
+            <li>Readable Python formulas</li>
+            <li>Footprint diagram in the PDF</li>
+            <li>Limitations stated up front</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-tinted">
+      <div class="shell">
+        <div class="section-heading compact">
+          <div>
+            <p class="kicker">From pin to PDF</p>
+            <h2>One small, inspectable pipeline.</h2>
+          </div>
+          <p>Each stage maps to code in the repository, so the estimate can be reviewed and changed.</p>
+        </div>
+
+        <ol class="pipeline">
+          <li>
+            <span>01</span>
+            <div>
+              <h3>Locate</h3>
+              <p>Parse an address, Google Maps URL, or explicit latitude and longitude.</p>
+            </div>
+          </li>
+          <li>
+            <span>02</span>
+            <div>
+              <h3>Measure</h3>
+              <p>Query nearby OSM buildings and calculate footprint area, perimeter, and dominant edge.</p>
+            </div>
+          </li>
+          <li>
+            <span>03</span>
+            <div>
+              <h3>Estimate</h3>
+              <p>Apply the configured setback approximation, module efficiency, losses, and tariff.</p>
+            </div>
+          </li>
+          <li>
+            <span>04</span>
+            <div>
+              <h3>Report</h3>
+              <p>Save the footprint diagram and feasibility summary as a local PDF.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section shell estimator-section" id="estimator">
+      <div class="section-heading">
+        <div>
+          <p class="kicker">Interactive model</p>
+          <h2>Stress-test the assumptions.</h2>
+        </div>
+        <p>
+          This browser demo replays SolarScan’s current sizing equations. It does not query
+          OpenStreetMap or replace the Python report workflow.
+        </p>
+      </div>
+
+      <div class="estimator-card">
+        <div class="estimator-topbar">
+          <span><i></i> solarscan://feasibility-preview</span>
+          <span id="caseMode">Documented W5 case</span>
+        </div>
+        <div class="estimator-layout">
+          <form class="controls" id="estimatorForm">
+            <div class="control-group">
+              <label for="building">Roof fixture</label>
+              <select id="building" name="building">
+                <option value="w5">CS Department W5 · documented case</option>
+                <option value="commercial">Commercial roof · illustrative fixture</option>
+              </select>
+            </div>
+
+            <div class="control-group">
+              <div class="control-label">
+                <label for="setback">Setback approximation</label>
+                <output id="setbackValue" for="setback">1.50 m</output>
+              </div>
+              <input id="setback" name="setback" type="range" min="0.5" max="3" step="0.1" value="1.5">
+            </div>
+
+            <div class="control-group">
+              <div class="control-label">
+                <label for="efficiency">Module efficiency</label>
+                <output id="efficiencyValue" for="efficiency">20.0%</output>
+              </div>
+              <input id="efficiency" name="efficiency" type="range" min="16" max="23" step="0.5" value="20">
+            </div>
+
+            <div class="control-group">
+              <div class="control-label">
+                <label for="tariff">Electricity rate</label>
+                <output id="tariffValue" for="tariff">0.38 / kWh</output>
+              </div>
+              <input id="tariff" name="tariff" type="range" min="0.1" max="0.8" step="0.01" value="0.38">
+            </div>
+
+            <p class="formula-note">
+              Uses <code>A<sub>usable</sub> = max(0, A − P × s)</code>, a perimeter-based
+              screening approximation—not a geometric polygon inset.
+            </p>
+          </form>
+
+          <div class="estimator-output">
+            <div class="roof-stage">
+              <canvas id="roofCanvas" width="760" height="320" role="img" aria-label="Illustrative rooftop footprint with panel layout and setback boundary"></canvas>
+              <div class="stage-key">
+                <span><i class="key-roof"></i> footprint</span>
+                <span><i class="key-setback"></i> setback</span>
+                <span><i class="key-panel"></i> panel field</span>
+              </div>
+            </div>
+            <div class="metric-grid" aria-live="polite">
+              <div><span>Usable roof</span><strong id="usableArea">1,361.92 m²</strong></div>
+              <div><span>DC array</span><strong id="dcCapacity">272.38 kW</strong></div>
+              <div><span>AC inverter</span><strong id="acCapacity">226.99 kW</strong></div>
+              <div><span>Annual yield</span><strong id="annualYield">232,395 kWh</strong></div>
+              <div><span>Simple payback</span><strong id="payback">3.08 years</strong></div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Estimator Section -->
-    <h2 class="section-title" id="estimator">Rooftop Solar Feasibility Estimator</h2>
-    <div class="est-card">
-      <div class="est-head">
-        <span style="color: #4ade80;">solarscan://feasibility-engine + osm-overpass</span>
-        <span style="color: #fbbf24; font-size: 0.78rem;">OSM WAY 204709053 FIXTURE</span>
-      </div>
-
-      <div class="est-body">
-        <div class="est-controls">
-          <div class="form-group">
-            <label for="bldg" class="form-label">Target Building</label>
-            <select id="bldg" class="form-select" onchange="runSolarScan()">
-              <option value="cs_w5">CS Dept W5, Sharjah (1,610.02 m²)</option>
-              <option value="commercial">Commercial Hub, Dubai (2,450.00 m²)</option>
-            </select>
+    <section class="section section-tinted" id="evidence">
+      <div class="shell">
+        <div class="section-heading">
+          <div>
+            <p class="kicker">One case, labeled as one case</p>
+            <h2>Evidence without the universal-accuracy claim.</h2>
           </div>
-
-          <div class="form-group">
-            <label for="setback" class="form-label">Setback Buffer: <span id="setbackLabel">1.50</span>m</label>
-            <input type="range" id="setback" class="form-range" min="0.5" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('setbackLabel').innerText = parseFloat(this.value).toFixed(2); runSolarScan();">
-          </div>
-
-          <div class="form-group">
-            <label for="eff" class="form-label">Panel Efficiency: <span id="effLabel">20.0</span>%</label>
-            <input type="range" id="eff" class="form-range" min="16.0" max="23.0" step="0.5" value="20.0" oninput="document.getElementById('effLabel').innerText = parseFloat(this.value).toFixed(1); runSolarScan();">
-          </div>
-
-          <button class="btn btn-primary" onclick="runSolarScan()" style="width: 100%; justify-content: center; margin-top: 10px;">☀️ Re-Calculate</button>
+          <p>
+            For University of Sharjah W5, the retrieved OSM footprint area is 94.7% of one
+            manual Google Earth trace. That is a useful spot check, not a benchmark across roofs.
+          </p>
         </div>
 
-        <div style="padding: 20px;">
-          <canvas id="solarCanvas" class="footprint-canvas" width="600" height="190" aria-label="Rooftop Footprint Array Display"></canvas>
-          <div class="metrics-grid">
-            <div class="metric-card">
-              <div class="metric-title">RECOMMENDED DC ARRAY</div>
-              <div class="metric-val" id="valDc">272.38 kW DC</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-title">INVERTER (1.20 DC/AC)</div>
-              <div class="metric-val" id="valAc">226.99 kW AC</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-title">ANNUAL YIELD</div>
-              <div class="metric-val" id="valKwh">232,394 kWh/yr</div>
-            </div>
-            <div class="metric-card">
-              <div class="metric-title">SIMPLE PAYBACK</div>
-              <div class="metric-val" id="valPayback">3.08 Years</div>
-            </div>
+        <div class="evidence-grid">
+          <figure class="comparison-figure">
+            <img
+              src="assets/side_by_side_comparison.png"
+              alt="Manual Google Earth roof trace beside the generated SolarScan report"
+              width="2931"
+              height="1115"
+              loading="lazy"
+            >
+            <figcaption>Repository case study: manual trace on the left, generated report on the right.</figcaption>
+          </figure>
+
+          <div class="evidence-panel">
+            <p class="panel-label">W5 comparison</p>
+            <dl>
+              <div><dt>Manual trace area</dt><dd>1,699.86 m²</dd></div>
+              <div><dt>OSM footprint area</dt><dd>1,610.02 m²</dd></div>
+              <div><dt>Area ratio</dt><dd>94.7%</dd></div>
+              <div><dt>Relative difference</dt><dd>5.3%</dd></div>
+              <div><dt>Generated estimate</dt><dd>272.38 kW DC</dd></div>
+            </dl>
+            <p class="boundary">
+              <strong>Interpretation:</strong> this comparison checks one footprint’s area.
+              It does not validate shading, structural capacity, code compliance, module layout,
+              irradiance, cost, or energy production.
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Verification Table -->
-    <h2 class="section-title">Side-by-Side Case Study Verification</h2>
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Parameter</th>
-            <th scope="col">Google Earth Manual Tracing</th>
-            <th scope="col">SolarScan Footprint Engine</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Rooftop Trace Area</strong></td>
-            <td><code>1,699.86 m²</code> (Manual click trace)</td>
-            <td><strong style="color: var(--accent-green);"><code>1,610.02 m²</code> (Shoelace formula)</strong></td>
-          </tr>
-          <tr>
-            <td><strong>Usable Area (1.50m Setback)</strong></td>
-            <td>Manual calculation required</td>
-            <td><strong style="color: var(--accent-green);">1,361.92 m² usable roof area</strong></td>
-          </tr>
-          <tr>
-            <td><strong>Engine Agreement Accuracy</strong></td>
-            <td>Baseline manual reference</td>
-            <td><strong style="color: var(--accent-green);">94.7% Agreement (&lt; 5.2% variance)</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <section class="section shell trust-section">
+      <div class="trust-copy">
+        <p class="kicker">The trust gate</p>
+        <h2>First-pass feasibility, not final engineering.</h2>
+        <p>
+          SolarScan is valuable when it helps you decide what deserves a closer look.
+          It should never turn a public map polygon into a bankable design claim.
+        </p>
+      </div>
+      <ul class="trust-list">
+        <li><span>01</span><p><strong>No site-survey claim.</strong> OSM coverage and geometry vary by location.</p></li>
+        <li><span>02</span><p><strong>No code-compliance claim.</strong> The setback is an area approximation, not a code-aware layout.</p></li>
+        <li><span>03</span><p><strong>No shading claim.</strong> Trees, neighboring structures, roof pitch, and 3D obstructions are not modeled.</p></li>
+        <li><span>04</span><p><strong>No bankable yield claim.</strong> Default sun-hours, losses, cost, and tariff must be replaced for real decisions.</p></li>
+      </ul>
+    </section>
 
-    <!-- Quickstart -->
-    <h2 class="section-title" id="quickstart">Verified Quickstart</h2>
-    <div class="code-box">
-      <code id="cmd1">python -m solarscan "Computer Science Department W5 Sharjah"</code>
-      <button class="copy-btn" onclick="copyCmd('cmd1', this)">Copy</button>
-    </div>
+    <section class="section section-tinted install-section" id="install">
+      <div class="shell install-grid">
+        <div>
+          <p class="kicker">Five-minute path</p>
+          <h2>Generate the first report.</h2>
+          <p class="install-copy">
+            Choose Python for an inspectable development setup or the packaged Windows installer
+            for a local command-line app.
+          </p>
+          <div class="install-tabs" role="tablist" aria-label="Install method">
+            <button id="tab-python" type="button" role="tab" aria-selected="true" aria-controls="panel-python">Python</button>
+            <button id="tab-windows" type="button" role="tab" aria-selected="false" aria-controls="panel-windows" tabindex="-1">Windows</button>
+          </div>
+        </div>
+
+        <div class="install-panels">
+          <div id="panel-python" class="install-panel" role="tabpanel" aria-labelledby="tab-python">
+            <div class="code-header">
+              <span>PowerShell, Terminal, or Bash</span>
+              <button class="copy-button" type="button" data-copy-target="pythonCommands">Copy</button>
+            </div>
+            <pre><code id="pythonCommands">git clone https://github.com/IamOumarIbrahim/SolarScan.git
+cd SolarScan
+python -m pip install -e .
+solarscan scan "Computer Science Department W5 Sharjah"</code></pre>
+          </div>
+
+          <div id="panel-windows" class="install-panel" role="tabpanel" aria-labelledby="tab-windows" hidden>
+            <div class="download-panel">
+              <span class="download-mark" aria-hidden="true">↓</span>
+              <div>
+                <strong>SolarScan Setup v0.5.0</strong>
+                <p>34 MB packaged Windows installer · Python not required</p>
+              </div>
+              <a class="button button-primary" href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe">
+                Download .exe
+              </a>
+            </div>
+            <p class="windows-note">Select “Add SolarScan to system PATH” during setup to run <code>solarscan</code> from a new terminal.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div class="shell final-cta-inner">
+        <div>
+          <p class="kicker">Open source · CC0</p>
+          <h2>Screen the roof. Inspect the assumptions. Improve the model.</h2>
+          <p>If SolarScan saves you one round of manual pre-screening, star the repository so the next solar builder can find it.</p>
+        </div>
+        <a class="button button-primary button-large" href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" rel="noopener noreferrer">
+          Star SolarScan on GitHub <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
   </main>
 
-  <footer role="contentinfo">
-    SolarScan Engine &bull; Oumar Ibrahim &bull; CC0 Public Domain
+  <footer class="site-footer">
+    <div class="shell footer-inner">
+      <span>SolarScan · Oumar Ibrahim · CC0 1.0</span>
+      <div>
+        <a href="https://github.com/IamOumarIbrahim/SolarScan/issues">Issues</a>
+        <a href="https://github.com/IamOumarIbrahim/SolarScan/releases">Releases</a>
+        <a href="https://github.com/IamOumarIbrahim/SolarScan">Source</a>
+      </div>
+    </div>
   </footer>
-
-  <script>
-    function copyCmd(id, btn) {
-      const text = document.getElementById(id).innerText;
-      navigator.clipboard.writeText(text).then(() => {
-        btn.innerText = 'Copied!';
-        setTimeout(() => { btn.innerText = 'Copy'; }, 2000);
-      });
-    }
-
-    function setRole(role) {
-      document.getElementById('btn-dev').classList.remove('active');
-      document.getElementById('btn-portfolio').classList.remove('active');
-      document.getElementById('btn-dev').setAttribute('aria-selected', 'false');
-      document.getElementById('btn-portfolio').setAttribute('aria-selected', 'false');
-      const desc = document.getElementById('roleDesc');
-
-      if (role === 'dev') {
-        document.getElementById('btn-dev').classList.add('active');
-        document.getElementById('btn-dev').setAttribute('aria-selected', 'true');
-        desc.innerText = 'Computes usable roof geometry after 1.50m fire-code setback insets, Mono-Si module efficiency (20.0%), and 1.20 DC/AC oversizing ratio.';
-      } else {
-        document.getElementById('btn-portfolio').classList.add('active');
-        document.getElementById('btn-portfolio').setAttribute('aria-selected', 'true');
-        desc.innerText = 'Batch CSV building processing, annual energy yield (232,394 kWh/yr), payback estimates (3.08 years), and client PDF reports.';
-      }
-      if (window.MathJax) MathJax.typesetPromise();
-    }
-
-    function runSolarScan() {
-      const bldg = document.getElementById('bldg').value;
-      const setback = parseFloat(document.getElementById('setback').value);
-      const eff = parseFloat(document.getElementById('eff').value) / 100.0;
-
-      let rawArea = bldg === 'commercial' ? 2450.0 : 1610.02;
-      let perimeter = bldg === 'commercial' ? 210.0 : 165.4;
-
-      const usableArea = Math.max(100, rawArea - (perimeter * setback));
-      const dcKw = usableArea * eff;
-      const acKw = dcKw / 1.20;
-      const annualKwh = dcKw * 5.5 * 365 * 0.6348 * 0.85;
-      const payback = (dcKw * 1000) / (annualKwh * 0.38);
-
-      document.getElementById('valDc').innerText = `${dcKw.toFixed(2)} kW DC`;
-      document.getElementById('valAc').innerText = `${acKw.toFixed(2)} kW AC`;
-      document.getElementById('valKwh').innerText = `${Math.round(annualKwh).toLocaleString()} kWh/yr`;
-      document.getElementById('valPayback').innerText = `${payback.toFixed(2)} Yrs`;
-
-      drawSolarCanvas(setback);
-    }
-
-    function drawSolarCanvas(setback) {
-      const canvas = document.getElementById('solarCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-
-      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.moveTo(80, 35); ctx.lineTo(500, 35); ctx.lineTo(470, 155); ctx.lineTo(110, 155); ctx.closePath(); ctx.stroke();
-
-      const inset = setback * 7;
-      ctx.strokeStyle = '#d97706'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-      ctx.beginPath(); ctx.moveTo(80+inset, 35+inset); ctx.lineTo(500-inset, 35+inset); ctx.lineTo(470-inset, 155-inset); ctx.lineTo(110+inset, 155-inset); ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
-
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.45)';
-      for (let x = 120+inset; x < 460-inset; x += 18) {
-        for (let y = 45+inset; y < 145-inset; y += 12) {
-          ctx.fillRect(x, y, 14, 8);
-        }
-      }
-    }
-
-    window.addEventListener('DOMContentLoaded', runSolarScan);
-  </script>
 </body>
 </html>

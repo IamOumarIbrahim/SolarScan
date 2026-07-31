@@ -24,17 +24,14 @@
 <br />
 
 > [!IMPORTANT]
-> **Zero-Dependency Core Setup**: SolarScan queries public OpenStreetMap Overpass data directly and runs locally across Windows, macOS, and Linux with standard Python 3.10+.
+> **Local-first setup**: SolarScan queries public OpenStreetMap Overpass data and generates reports on your machine. The Python install declares its runtime dependencies; the Windows installer bundles them.
 
-**SolarScan** is an end-to-end solar engineering platform structured into three modular packages:
-- **`packages/feasibility`**: Pulls rooftop polygons from OpenStreetMap, applies setback penalties, and calculates usable solar panel area.
-- **`packages/pv-design`**: Performs detailed electrical array sizing, module counts, string inverter matching, and array capacity calculations.
-- **`packages/sam-export`**: Integrates NREL System Advisor Model (SAM) simulation parameters and renders automated LaTeX & PDF feasibility reports.
+**SolarScan** is a first-pass rooftop solar screening tool. The supported `solarscan` package queries OpenStreetMap footprints, applies transparent sizing assumptions, and generates a local PDF. The repository also contains experimental feasibility, PV-design, and SAM-export modules for further development.
 
 ```bash
-# Quickstart — Run rooftop feasibility analysis
-pip install -r requirements.txt
-python -m solarscan "Computer Science Department W5 Sharjah"
+# Quickstart — run rooftop feasibility analysis
+python -m pip install -e .
+solarscan scan "Computer Science Department W5 Sharjah"
 ```
 
 <br />
@@ -69,20 +66,20 @@ python -m solarscan "Computer Science Department W5 Sharjah"
 
 ## What is SolarScan?
 
-Commercial solar feasibility assessments traditionally require manual site surveys or expensive proprietary software subscriptions (e.g. Aurora Solar or SAM). SolarScan replaces manual aerial tracing with automated OpenStreetMap (OSM) spatial queries, extracting precise 2D building footprint polygons to deliver instant DC array sizing, annual kWh yield estimates, and financial payback calculations in a client-ready PDF report.
+SolarScan automates an early screening step that otherwise starts with manual footprint lookup and spreadsheet arithmetic. It uses an OpenStreetMap (OSM) building polygon to produce a reviewable estimate of roof area, DC/AC sizing, annual energy, and simple payback in a local PDF.
 
 Instead of manual hand-surveys, SolarScan automates the spatial analysis pipeline:
-- **Footprint-Accurate Area Extraction**: Queries OSM Overpass API for exact building polygon vertices.
-- **Setback & Obstruction Sizing**: Insets roof boundaries for fire-code compliance and accounts for roof obstructions.
+- **Tagged Footprint Extraction**: Queries OSM Overpass for the selected building polygon and computes its 2D area.
+- **Setback Screening Approximation**: Reduces area using `A - perimeter × setback`; this is not a geometric inset or a fire-code-compliance check.
 - **One-Click PDF Generation**: Produces a complete feasibility report with custom footprint diagrams and yield metrics.
 
 ---
 
 ## Key Features
 
-- **Footprint-Accurate Area Extraction**: Queries the OSM Overpass API for a building's tagged footprint polygon and computes usable roof area directly from its vertices via the shoelace formula, instead of assuming a generic rectangle.
+- **OSM Footprint Area Extraction**: Queries the OSM Overpass API for a building's tagged footprint polygon and computes its area from the returned vertices via the shoelace formula.
 - **Orientation & Tilt Penalty Modeling**: Derives roof azimuth from the footprint's dominant edge and applies an irradiance derating curve for non-optimal orientation and a configurable default tilt.
-- **Setback-Aware Usable Area**: Automatically insets the usable area polygon by a configurable fire-code setback distance and subtracts detected obstruction tags (chimneys, vents) where present in OSM data.
+- **Setback-Aware Screening Area**: Applies a configurable perimeter-based area penalty. The current engine does not geometrically inset the polygon or extract rooftop obstructions.
 - **Automated System Sizing**: Converts usable area into a DC array size at a standard module efficiency, then applies a target DC/AC ratio to recommend an inverter capacity band.
 - **One-Click PDF Report**: Generates a client-ready PDF with a footprint diagram, system specs, estimated annual kWh yield, and a simple payback estimate using a local utility rate input.
 - **Batch Mode for Portfolios**: Accepts a CSV of addresses and produces one feasibility report per row, built for scanning an entire street or client portfolio in a single run.
@@ -97,7 +94,7 @@ Data flow from an address query through footprint extraction, sizing, and yield 
 graph TD
     Input["Address or Lat/Lon"] --> Stage1["OSM Overpass API: Building Footprint Query"]
     Stage1 --> Stage2["Shoelace Area + Azimuth Extraction"]
-    Stage2 --> Stage3["Setback Inset & Obstruction Subtraction"]
+    Stage2 --> Stage3["Setback Area Approximation"]
     Stage3 --> Stage4["System Sizing: DC Array + Inverter Band"]
     Stage4 --> Stage5["Yield & Payback Estimator"]
     Stage5 --> Output["PDF Feasibility Report"]
@@ -122,11 +119,11 @@ $$A = \frac{1}{2}\left|\sum_{i=1}^{n}\left(x_i y_{i+1} - x_{i+1} y_i\right)\righ
 Where $(x_i, y_i)$ are the projected coordinates of the building footprint's $n$ vertices returned by OSM.
 
 ### 2. Usable Roof Area After Setback
-Reduces raw footprint area by fire-code setback and known obstructions before sizing the array.
+Reduces raw footprint area with a perimeter-based setback penalty and an optional obstruction-area input before sizing the array.
 
 $$A_{\text{usable}} = A - P \cdot s - A_{\text{obstruction}}$$
 
-Where $P$ is the footprint perimeter, $s$ is the fire-code setback distance, and $A_{\text{obstruction}}$ is the total area of subtracted obstruction tags.
+Where $P$ is the footprint perimeter, $s$ is the configured setback distance, and $A_{\text{obstruction}}$ is an optional supplied area. This screening equation is not equivalent to a geometric polygon inset, and the current OSM query sets obstruction area to zero.
 
 ### 3. DC Array Capacity Sizing
 Converts usable area into a standard-test-condition DC capacity estimate.
@@ -169,7 +166,7 @@ Here is a **Side-by-Side Comparison** showing Google Earth's manual rooftop meas
 | **Manual Measure Trace Perimeter**: **`173.45 m`** | **Matched Building**: OSM Way ID `204709053` (`ref: W5`) |
 | **Elevation Estimate**: `22.43 m` median | **Usable Solar Area (after $1.5\text{m}$ setback)**: **`1,361.92 m²`** |
 | **Target Location**: Computer Science Dept W5, UoS | **Recommended Array Rating**: **`272.38 kW DC`** ($226.99\text{ kW AC}$) |
-| **Verification**: [ Verify Location on Google Maps](https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D) | **Automated Engine Accuracy**: **94.7% Agreement** ($< 5.2\%$ variance) |
+| **Reference**: [View the location on Google Maps](https://www.google.com/maps/place/Computer+Science+Department+W5/@25.2893152,55.4779323,292m/data=!3m1!1e3!4m6!3m5!1s0x3e5f5f9cfcc93cc5:0xe49ec04d459cebef!8m2!3d25.2893304!4d55.4783103!16s%2Fg%2F11g6lxlmdc?entry=ttu&g_ep=EgoyMDI2MDcyNy4wIKXMDSoASAFQAw%3D%3D) | **One-case area ratio**: **94.7%** (**5.3%** relative difference) |
 
 ### System Sizing & Yield Analysis Output Table
 
@@ -184,7 +181,7 @@ Here is a **Side-by-Side Comparison** showing Google Earth's manual rooftop meas
 | **Recommended Inverter Band (AC)** | **`226.99 kW AC`** | Rated AC power at target $1.20$ DC/AC oversizing ratio |
 | **Dominant Roof Azimuth** | **`303.8°`** | Angle derived from longest rooftop footprint edge relative to North |
 | **Assumed Panel Tilt** | **`15°`** | Fixed commercial tilt angle optimal for UAE latitude |
-| **Estimated Annual Energy Yield** | **`232,394.04 kWh/yr`** | Derived from $5.5\text{ PSH}$, orientation derate ($0.6348$), and $0.85$ system loss |
+| **Estimated Annual Energy Yield** | **`≈232,395 kWh/yr`** | Derived from $5.5\text{ PSH}$, the current orientation-derate floor ($0.5000$), and $0.85$ system loss |
 | **Utility Electricity Rate** | **`0.38 / kWh`** | Local grid tariff in AED / kWh |
 | **Estimated Simple Payback** | **`3.08 years`** | Installed CAPEX vs annual electricity cost savings |
 
@@ -198,7 +195,7 @@ If you do not have Python installed or prefer a standalone Windows application:
  **[Download SolarScan_Setup_v0.5.0.exe (34 MB)](https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe)**
 
 * **Zero Dependencies**: Bundles Python runtime and all C-extensions out-of-the-box. Upgrades outdated local packages automatically during setup.
-* **Automatic System Integration**: Adds `solarscan` to Windows system `PATH` so non-technical users can open Command Prompt or PowerShell and type `solarscan scan "..."` instantly.
+* **Optional System Integration**: Select “Add SolarScan to system PATH” during setup, then open a new terminal and run `solarscan scan "..."`.
 * **Desktop Shortcuts**: Creates Start Menu & Desktop shortcuts for `SolarScan CLI`.
 
 ---
@@ -207,7 +204,7 @@ If you do not have Python installed or prefer a standalone Windows application:
 ```bash
 git clone https://github.com/IamOumarIbrahim/SolarScan.git
 cd SolarScan
-pip install -e .
+python -m pip install -e .
 ```
 
 ### Option B: Prerequisites Setup
@@ -218,7 +215,7 @@ winget install --id Git.Git -e --accept-source-agreements --accept-package-agree
 
  **Verification Command**:
 ```bash
-py -m solarscan.cli --help
+python -m solarscan --help
 ```
 *Expected Output*: `usage: solarscan [-h] {scan,batch} ...`
 
@@ -279,8 +276,12 @@ dc_ac_ratio: 1.2
 
 ## Scope & Limitations
 
-- **OSM Data Dependency**: Sizing accuracy relies on OpenStreetMap footprint coverage for the queried location. Unmapped buildings fall back to synthetic default geometry or coordinate overrides (`--lat`/`--lon`).
-- **Shading Analysis**: SolarScan models azimuth and tilt derating, but does not simulate 3D tree or adjacent structure shading shadow patterns.
+- **OSM Data Dependency**: Results depend on OpenStreetMap coverage and tagging. When no building is returned, the current engine uses a synthetic fallback polygon; treat that output as a connectivity/error signal, not a real roof.
+- **Building Selection**: The nearest returned OSM way is selected. Dense sites and multipolygon relations need manual verification.
+- **Setback & Obstructions**: The setback is an area approximation (`A - P × s`), not a geometric inset or fire-code layout. Rooftop obstructions are not extracted by the current query.
+- **Shading & Structure**: SolarScan does not model 3D shading, roof pitch, structural capacity, equipment clearances, or interconnection constraints.
+- **Yield & Finance**: Peak sun hours, losses, installed cost, and tariff are configurable screening assumptions—not a bankable energy or financial model.
+- **Professional Review**: Every generated report requires site-specific engineering, code, utility, and commercial review before a real project decision.
 
 ---
 

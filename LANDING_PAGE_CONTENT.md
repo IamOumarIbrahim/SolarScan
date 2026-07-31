@@ -1,42 +1,53 @@
-# SolarScan — Landing Page Content Manifest
+# SolarScan landing-page content contract
 
-## 1. Five-Second Positioning Message
-- **Target Audience**: Commercial Solar Developers, Energy Analysts, Building Portfolio Managers.
-- **5-Second Statement**: "Helps commercial solar developers and portfolio managers generate automated rooftop solar PV feasibility reports from OpenStreetMap building footprints."
-- **Primary Mechanism**: End-to-end Python engine querying OpenStreetMap Overpass building polygons, calculating usable roof area via Shoelace geometry after fire-code setback insets, and outputting DC array sizing, annual yield, and NREL SAM reports.
+This file records the claims that the public landing page may make. It exists so copy,
+tests, and implementation can be reviewed against the same evidence.
 
-## 2. Role-Based Pathways
-- **Role 1: Commercial Solar Developer**: Focuses on usable area inset calculations ($A_{\text{usable}} = A - P \cdot s - A_{\text{obstruction}}$), module efficiency (20.0%), DC array sizing ($C_{\text{array}} = A_{\text{usable}} \times 0.20\text{ kW/m}^2$), and string inverter sizing (1.20 DC/AC oversizing ratio).
-- **Role 2: Building Portfolio Manager**: Focuses on Google Maps URL / address scanning, batch CSV multi-building processing, annual energy yield (232,394 kWh/yr), local tariff savings, simple financial payback (3.08 years), and client PDF report generation.
+## Audience and job
 
-## 3. Verified Commands & Installation
-- **Verified Direct Scan Command**:
-  ```bash
-  python -m solarscan "Computer Science Department W5 Sharjah"
-  ```
-- **Pip Editable Installation**:
-  ```bash
-  pip install -e .
-  ```
-- **1-Click Windows Executable**:
-  Bundled standalone Windows installer (`SolarScan_Setup_v0.5.0.exe`).
-- **Test Suite Verification**:
-  ```bash
-  py -m pytest -v
-  # Output: 26 passed in 3.12s
-  ```
+- Primary audience: solar pre-sales engineers and technical users doing early rooftop triage.
+- Secondary audience: portfolio analysts who want one consistent report per address.
+- Core job: turn a location into an inspectable first-pass roof, capacity, yield, payback,
+  and PDF estimate before detailed design begins.
 
-## 4. Empirical Case Study & Geometry Baseline
-- **Verified Case Study**: Computer Science Dept W5, University of Sharjah, UAE (OSM Way ID `204709053`).
-  - Google Earth Manual Measure Trace Area: 1,699.86 m²
-  - SolarScan Shoelace Polygon Area: 1,610.02 m²
-  - Spatial Agreement: **94.7% Agreement** (< 5.2% variance)
-  - Usable Roof Area (after 1.50m setback): 1,361.92 m²
-  - Recommended DC Array Capacity: **272.38 kW DC** (226.99 kW AC)
-- **Mathematical Formulations**:
-  - Shoelace Footprint Area: $A = \frac{1}{2} |\sum_{i=1}^n (x_i y_{i+1} - x_{i+1} y_i)|$
-  - Derate Factors: 5.5 PSH, 0.6348 azimuth/tilt factor, 0.85 system loss.
+## Supported paths
 
-## 5. Feasibility Disclaimer & Data Provenance
-- **Preliminary Feasibility Disclaimer**: SolarScan provides preliminary automated solar PV feasibility assessments based on public 2D GIS building footprints. Detailed on-site structural engineering, shading analysis, and local utility interconnect approval remain required prior to commercial procurement.
-- **Browser Estimator Disclosure**: The interactive rooftop estimator renders real OSM footprint vertices and calculations for bundled case study fixtures (Computer Science Dept W5 Sharjah, Way `204709053`).
+```text
+git clone https://github.com/IamOumarIbrahim/SolarScan.git
+cd SolarScan
+python -m pip install -e .
+solarscan scan "Computer Science Department W5 Sharjah"
+```
+
+The packaged Windows installer is attached to release `v0.5.0` as
+`SolarScan_Setup_v0.5.0.exe`. Adding SolarScan to `PATH` is an installer task the user
+must select.
+
+## W5 case-study facts
+
+| Measure | Value |
+| --- | ---: |
+| Manual Google Earth trace | 1,699.86 m² |
+| Retrieved OSM footprint | 1,610.02 m² |
+| OSM/manual area ratio | 94.7% |
+| Relative area difference | 5.3% |
+| Perimeter used by the engine | 165.40 m |
+| Usable area at 1.50 m setback | 1,361.92 m² |
+| DC estimate at 20% module efficiency | 272.38 kW |
+| AC estimate at 1.20 DC/AC | 226.99 kW |
+| Annual yield with current defaults | approximately 232,395 kWh/year |
+| Simple payback at 0.38/kWh and 1,000/kW | 3.08 years |
+
+The 94.7% figure is an area ratio for one comparison. It is not a general accuracy,
+agreement, energy-yield, or system-performance score.
+
+## Required boundary language
+
+- The OSM query and browser fixture are not a site survey.
+- The setback calculation is `max(0, A - perimeter × setback - obstruction area)`.
+  It is not a geometric polygon inset or a fire-code layout.
+- The current query does not extract rooftop obstructions.
+- Shading, roof pitch, structural capacity, clearances, code compliance, interconnection,
+  and bankable energy modeling are outside the current engine.
+- The Python engine uses a synthetic polygon after all Overpass mirrors fail. That output
+  must be treated as a fallback/error condition, not a measured building.

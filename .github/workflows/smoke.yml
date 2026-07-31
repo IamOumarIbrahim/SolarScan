@@ -10,16 +10,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f pyproject.toml ]; then pip install -e .; fi
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then python -m pip install -e .; fi
       - name: Smoke import test
         run: |
-          python -c "print('Smoke test passed')"
+          python -c "import solarscan; from solarscan.cli import load_config; assert solarscan.__version__ == '0.5.0'; assert load_config()['dc_ac_ratio'] == 1.2"
+          python -m solarscan --help
