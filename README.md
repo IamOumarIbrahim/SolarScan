@@ -39,13 +39,6 @@ python -m solarscan "Computer Science Department W5 Sharjah"
 
 <br />
 
-## Repository About & Topics
-
-### About
-Automated rooftop solar PV feasibility report generator using OpenStreetMap Overpass API, shoelace polygon geometry, fire-code setback modeling, and automated PDF export.
-
-### Topics / Tags
-`solar-pv`, `osm-overpass`, `rooftop-solar`, `photovoltaic-sizing`, `shoelace-algorithm`, `feasibility-report`, `pdf-generation`, `python-3`, `renewable-energy`, `gis-geometry`
 
 ---
 
