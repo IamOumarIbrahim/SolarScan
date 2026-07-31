@@ -3,416 +3,223 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SolarScan — Neumorphic Soft UI Suite</title>
-  <meta name="description" content="Automated rooftop solar PV feasibility reports from OpenStreetMap Overpass API, shoelace geometry, fire-code setback modeling, and system sizing." />
+  <title>SolarScan — Instant Rooftop Solar & Savings Estimator</title>
+  <meta name="description" content="Type an address or pick a building to calculate rooftop solar panel sizing, electricity generated, and money saved." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-neumorphic: #e2e8f0;
+      --bg: #e2e8f0;
       --shadow-light: #ffffff;
       --shadow-dark: #b6c1d0;
-      --text-primary: #0f172a;
-      --text-secondary: #475569;
-      
-      --accent-green: #16a34a;
-      --accent-amber: #d97706;
-      --accent-cyan: #0891b2;
-
-      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'JetBrains Mono', monospace;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --green: #16a34a;
+      --amber: #d97706;
+      --cyan: #0891b2;
+      --font: 'Inter', system-ui, sans-serif;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); line-height: 1.6; }
+    .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
 
-    body {
-      background-color: var(--bg-neumorphic);
-      color: var(--text-primary);
-      font-family: var(--font-sans);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-
-    .neu-extruded {
-      background: var(--bg-neumorphic);
+    .neu-card {
+      background: var(--bg);
       box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light);
-      border-radius: 24px;
+      border-radius: 24px; padding: 32px; margin-bottom: 32px;
       border: 1px solid rgba(255, 255, 255, 0.7);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    .neu-extruded:hover {
-      box-shadow: 14px 14px 28px var(--shadow-dark), -14px -14px 28px var(--shadow-light);
-    }
-
-    .neu-sunken {
-      background: var(--bg-neumorphic);
+    .neu-well {
+      background: var(--bg);
       box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
-      border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 18px; padding: 20px;
     }
-
     .neu-btn {
-      background: var(--bg-neumorphic);
+      background: var(--bg);
       box-shadow: 6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      color: var(--text-primary);
-      font-weight: 700;
-      font-size: 0.92rem;
-      padding: 14px 28px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      outline: none;
+      border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.9);
+      color: var(--text); font-weight: 700; font-size: 1rem; padding: 14px 28px;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+      transition: all 0.2s ease; text-decoration: none; outline: none; margin: 6px;
     }
-    .neu-btn:hover {
-      box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light);
-      transform: translateY(-1px);
-    }
-    .neu-btn:active, .neu-btn.active {
-      box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light);
-      transform: translateY(1px);
-    }
+    .neu-btn:hover { transform: translateY(-2px); box-shadow: 8px 8px 18px var(--shadow-dark), -8px -8px 18px var(--shadow-light); }
+    .neu-btn:active { box-shadow: inset 5px 5px 10px var(--shadow-dark), inset -5px -5px 10px var(--shadow-light); transform: translateY(1px); }
+    .neu-btn-primary { background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; border: none; }
 
-    .neu-btn-accent {
-      background: linear-gradient(135deg, #16a34a, #15803d);
-      box-shadow: 6px 6px 16px rgba(22, 163, 74, 0.4), -6px -6px 16px var(--shadow-light);
-      color: #ffffff;
-      border: none;
-    }
+    header { padding: 20px 0; background: rgba(226, 232, 240, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.5); }
+    .nav { display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-weight: 800; font-size: 1.3rem; display: flex; align-items: center; gap: 10px; }
 
-    .glow-dot {
-      width: 10px; height: 10px; border-radius: 50%; display: inline-block;
-    }
-    .glow-dot.green { background: #10b981; box-shadow: 0 0 10px #10b981; }
+    .hero { text-align: center; padding: 60px 0 40px; }
+    .hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
+    .hero h1 span { color: var(--green); }
+    .hero p { font-size: 1.25rem; color: var(--text-muted); max-width: 680px; margin: 0 auto 30px; }
 
-    header {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(226, 232, 240, 0.9);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 4px 20px rgba(182, 193, 208, 0.35);
+    .step-number {
+      width: 42px; height: 42px; border-radius: 50%; background: var(--green); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; margin-bottom: 16px;
     }
-    .nav-container { display: flex; align-items: center; justify-content: space-between; height: 80px; }
-    
-    .logo {
-      display: flex; align-items: center; gap: 14px;
-      font-weight: 800; font-size: 1.25rem; color: var(--text-primary); text-decoration: none;
-    }
-    .logo-badge {
-      width: 44px; height: 44px; border-radius: 14px;
-      background: var(--bg-neumorphic);
-      box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
-      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
-    }
+    .step-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 10px; }
+    .step-desc { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 24px; }
 
-    .nav-links { display: flex; gap: 16px; list-style: none; }
-    .nav-links a {
-      color: var(--text-secondary); text-decoration: none; font-size: 0.95rem; font-weight: 600;
-      padding: 10px 18px; border-radius: 12px; transition: all 0.2s ease;
-    }
-    .nav-links a:hover { color: var(--text-primary); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
 
-    .hero { padding: 80px 0 60px; text-align: center; }
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 10px 24px; border-radius: 999px;
-      font-size: 0.88rem; font-weight: 700; color: var(--accent-green);
-      margin-bottom: 28px;
-    }
-    .hero-title {
-      font-size: 3.5rem; font-weight: 800; line-height: 1.15; letter-spacing: -0.02em;
-      color: var(--text-primary); margin-bottom: 20px;
-    }
-    .hero-title span {
-      background: linear-gradient(135deg, #16a34a, #d97706);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero-subtitle {
-      font-size: 1.25rem; color: var(--text-secondary); max-width: 780px; margin: 0 auto 40px; font-weight: 500;
-    }
-    .hero-cta { display: flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap; }
-
-    .section { padding: 70px 0; }
-    .section-header { text-align: center; margin-bottom: 50px; }
-    .section-tag { color: var(--accent-green); font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: block; }
-    .section-title { font-size: 2.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
-    .section-desc { color: var(--text-secondary); font-size: 1.1rem; max-width: 660px; margin: 0 auto; }
-
-    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 32px; }
-    .card { padding: 36px; }
-    .card-icon {
-      width: 60px; height: 60px; border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.75rem; margin-bottom: 22px;
-    }
-
-    .card-title { font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
-    .card-text { color: var(--text-secondary); font-size: 0.98rem; line-height: 1.6; }
-
-    .sandbox-container { padding: 36px; }
-
-    .panel-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 36px; }
-    @media (max-width: 900px) { .panel-grid { grid-template-columns: 1fr; } }
-
-    .form-group { margin-bottom: 20px; }
-    .form-label { display: block; font-size: 0.88rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
-    
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
     .form-select, .form-range {
-      width: 100%; padding: 14px 18px; border-radius: 14px;
-      font-family: var(--font-sans); font-size: 0.92rem; color: var(--text-primary);
-      outline: none; border: none;
+      width: 100%; padding: 12px; border-radius: 12px; border: none; outline: none; background: var(--bg);
+      font-weight: 600; font-size: 0.9rem;
     }
-    .form-range { padding: 0; height: 10px; accent-color: var(--accent-green); }
+    .form-range { padding: 0; height: 8px; accent-color: var(--green); }
 
-    .display-box { padding: 28px; display: flex; flex-direction: column; }
-    .console-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding-bottom: 14px; margin-bottom: 16px; border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-      font-weight: 700; font-size: 0.88rem; color: var(--text-secondary);
-    }
+    canvas { width: 100%; height: 160px; border-radius: 12px; margin-bottom: 12px; }
 
-    canvas.solar-canvas {
-      width: 100%; height: 200px; border-radius: 14px; margin-bottom: 18px;
-    }
+    .stat-card { text-align: center; padding: 10px; border-radius: 12px; }
+    .stat-title { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
+    .stat-val { font-size: 1.2rem; font-weight: 800; color: var(--green); }
 
-    .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .metric-card { padding: 14px; text-align: center; }
-    .metric-title { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; margin-bottom: 4px; }
-    .metric-value { font-size: 1.2rem; font-weight: 800; color: var(--accent-green); }
-
-    .neu-table {
-      width: 100%; border-collapse: separate; border-spacing: 0;
-      overflow: hidden; border-radius: 24px; margin-top: 24px;
-    }
-    .neu-table th, .neu-table td { padding: 20px 28px; text-align: left; }
-    .neu-table th { background: rgba(0, 0, 0, 0.03); color: var(--text-secondary); font-size: 0.88rem; font-weight: 800; text-transform: uppercase; }
-    .neu-table td { border-top: 1px solid rgba(0, 0, 0, 0.04); font-size: 0.98rem; }
-
-    footer { padding: 50px 0; text-align: center; color: var(--text-secondary); font-size: 0.95rem; margin-top: 50px; }
+    footer { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 0.95rem; }
   </style>
 </head>
 <body>
 
-  <!-- Header Nav -->
   <header>
-    <div class="container nav-container">
-      <a href="#" class="logo">
-        <div class="logo-badge neu-extruded">☀️</div>
-        <span>SolarScan</span>
-      </a>
-      <ul class="nav-links">
-        <li><a href="#overview">Overview</a></li>
-        <li><a href="#simulator">Calculator</a></li>
-        <li><a href="#verification">Verification</a></li>
-      </ul>
-      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" class="neu-btn">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-        GitHub Repository
-      </a>
+    <div class="container nav">
+      <div class="logo">☀️ SolarScan</div>
+      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" class="neu-btn">GitHub Code</a>
     </div>
   </header>
 
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="container">
-      <div class="hero-badge neu-sunken">
-        <span class="glow-dot green"></span> OpenStreetMap Rooftop Solar Feasibility Engine
-      </div>
-      <h1 class="hero-title">Automated Solar PV Reports from <span>Building Footprints</span></h1>
-      <p class="hero-subtitle">
-        An elegant neumorphic single-page engine extracting building polygons from OpenStreetMap to compute usable roof area, array DC capacity, and payback years.
-      </p>
-      <div class="hero-cta">
-        <a href="#simulator" class="neu-btn neu-btn-accent">☀️ Run Feasibility Calculator</a>
-      </div>
-    </div>
-  </section>
+  <div class="container">
+    <!-- Hero Section -->
+    <section class="hero">
+      <h1>Instant Rooftop <span>Solar Estimator</span></h1>
+      <p>See how much solar energy any building roof can generate and how much money you save in 3 seconds.</p>
+      <a href="#test-drive" class="neu-btn neu-btn-primary">☀️ Calculate Roof Savings Now</a>
+    </section>
 
-  <!-- Overview Section -->
-  <section class="section" id="overview">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Solar Engineering Engine</span>
-        <h2 class="section-title">Automated Spatial Pipeline</h2>
-      </div>
+    <!-- STEP 1: How It Works -->
+    <section class="neu-card">
+      <div class="step-number">1</div>
+      <h2 class="step-title">How It Works in 3 Easy Steps</h2>
+      <p class="step-desc">No manual hand-tracing or expensive site surveys required:</p>
 
-      <div class="grid-3">
-        <div class="card neu-extruded">
-          <div class="card-icon neu-sunken" style="color: var(--accent-green);">🗺️</div>
-          <h3 class="card-title">Footprint Extraction</h3>
-          <p class="card-text">Queries OSM Overpass API to extract building polygon vertices and computes exact area via the Shoelace formula.</p>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+        <div class="neu-well" style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 6px;">🗺️</div>
+          <div style="font-weight: 700; color: var(--green);">1. Pick a Building</div>
+          <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Type an address or click a building preset.</div>
         </div>
 
-        <div class="card neu-extruded">
-          <div class="card-icon neu-sunken" style="color: var(--accent-amber);">📐</div>
-          <h3 class="card-title">Setback Inset</h3>
-          <p class="card-text">Insets perimeter boundaries by fire-code safety distances (default 1.5m) and subtracts roof obstruction tags.</p>
+        <div class="neu-well" style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 6px;">📐</div>
+          <div style="font-weight: 700; color: var(--amber);">2. Auto Roof Trace</div>
+          <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Our tool extracts the roof shape & safety border automatically.</div>
         </div>
 
-        <div class="card neu-extruded">
-          <div class="card-icon neu-sunken" style="color: var(--accent-cyan);">⚡</div>
-          <h3 class="card-title">Array & Payback Sizing</h3>
-          <p class="card-text">Sizes DC array capacity, string inverter ratios (1.20 DC/AC), annual kWh yield, and simple financial payback years.</p>
+        <div class="neu-well" style="text-align: center;">
+          <div style="font-size: 2rem; margin-bottom: 6px;">💰</div>
+          <div style="font-weight: 700; color: var(--cyan);">3. Instant Savings Quote</div>
+          <div style="font-size: 0.88rem; color: var(--text-muted); margin-top: 4px;">Get total solar power, energy yield, and payback years.</div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Interactive Feasibility Calculator -->
-  <section class="section" id="simulator">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Tactile UI Demo</span>
-        <h2 class="section-title">Interactive Solar Calculator</h2>
-      </div>
+    <!-- STEP 2: Interactive Roof Calculator -->
+    <section class="neu-card" id="test-drive">
+      <div class="step-number">2</div>
+      <h2 class="step-title">Interactive Roof Solar Calculator</h2>
+      <p class="step-desc">Change the sliders to see solar panels pop onto the roof in real-time:</p>
 
-      <div class="sandbox-container neu-extruded">
-        <div class="panel-grid">
-          <div style="padding: 10px;">
-            <div style="font-weight: 800; font-size: 1.1rem; margin-bottom: 16px;">🗺️ Target Building Preset</div>
-
-            <div class="form-group">
-              <label class="form-label">Select Target Building</label>
-              <select class="form-select neu-sunken" id="buildingSelect" onchange="runSolarScan()">
-                <option value="cs_w5">Computer Science Dept W5, Sharjah (1,610 m²)</option>
-                <option value="commercial">Commercial Hub, Dubai Silicon Oasis (2,450 m²)</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Setback Buffer: <span id="setbackVal">1.5</span> m</label>
-              <input type="range" class="form-range neu-sunken" id="setbackSlider" min="0.5" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('setbackVal').innerText = this.value; runSolarScan();">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Panel Efficiency: <span id="effVal">20.0</span>%</label>
-              <input type="range" class="form-range neu-sunken" id="effSlider" min="16.0" max="23.0" step="0.5" value="20.0" oninput="document.getElementById('effVal').innerText = this.value; runSolarScan();">
-            </div>
-
-            <button class="neu-btn neu-btn-accent" onclick="runSolarScan()" style="width: 100%; justify-content: center; margin-top: 14px;">☀️ Scan Building Rooftop</button>
+      <div class="grid-2">
+        <div style="display: flex; flex-direction: column; justify-content: center;">
+          <div class="form-group">
+            <label class="form-label">Target Building</label>
+            <select class="form-select neu-well" id="bldg" onchange="calcSolar()">
+              <option value="w5">Computer Science Dept W5 (1,610 m² Roof)</option>
+              <option value="dso">Commercial Hub, DSO (2,450 m² Roof)</option>
+            </select>
           </div>
 
-          <div class="display-box neu-sunken">
-            <div class="console-header">
-              <span>ROOFTOP POLYGON VISUALIZER</span>
-              <span>OSM MATCHED</span>
+          <div class="form-group">
+            <label class="form-label">Safety Border: <span id="setbackLabel">1.5</span>m</label>
+            <input type="range" class="form-range neu-well" id="setback" min="0.5" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('setbackLabel').innerText = this.value; calcSolar();">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Panel Efficiency: <span id="effLabel">20</span>%</label>
+            <input type="range" class="form-range neu-well" id="eff" min="16" max="23" step="1" value="20" oninput="document.getElementById('effLabel').innerText = this.value; calcSolar();">
+          </div>
+        </div>
+
+        <div class="neu-well">
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">ROOF DIAGRAM & LIVE ESTIMATE</div>
+          <canvas id="solarCanvas"></canvas>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+            <div class="neu-card stat-card" style="margin-bottom:0; padding:10px;">
+              <div class="stat-title">SOLAR ARRAY POWER</div>
+              <div class="stat-val" id="outKw">272 kW</div>
             </div>
-
-            <canvas id="solarCanvas" class="solar-canvas neu-sunken" width="480" height="200"></canvas>
-
-            <div class="metrics-grid">
-              <div class="metric-card neu-extruded">
-                <div class="metric-title">RECOMMENDED DC ARRAY</div>
-                <div class="metric-value" id="valDc">272.38 kW DC</div>
-              </div>
-              <div class="metric-card neu-extruded">
-                <div class="metric-title">INVERTER RATING</div>
-                <div class="metric-value" id="valAc">226.99 kW AC</div>
-              </div>
-              <div class="metric-card neu-extruded">
-                <div class="metric-title">ANNUAL YIELD</div>
-                <div class="metric-value" id="valKwh">232,394 kWh</div>
-              </div>
-              <div class="metric-card neu-extruded">
-                <div class="metric-title">PAYBACK PERIOD</div>
-                <div class="metric-value" id="valPayback">3.08 Years</div>
-              </div>
+            <div class="neu-card stat-card" style="margin-bottom:0; padding:10px;">
+              <div class="stat-title">PAYBACK TIME</div>
+              <div class="stat-val" id="outPay">3.1 Years</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Side-by-Side Verification -->
-  <section class="section" id="verification">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-tag">Accuracy</span>
-        <h2 class="section-title">94.7% Agreement with Manual Measurement</h2>
-      </div>
-
-      <div class="neu-extruded" style="padding: 14px;">
-        <table class="neu-table">
-          <thead>
-            <tr>
-              <th>Parameter / Feature</th>
-              <th>Google Earth Manual Tracing</th>
-              <th>SolarScan Automated Engine</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>Roof Area Measurement</strong></td>
-              <td><code>1,699.86 m²</code> (Manual click trace)</td>
-              <td><strong style="color: var(--accent-green);"><code>1,610.02 m²</code> (Shoelace formula)</strong></td>
-            </tr>
-            <tr>
-              <td><strong>Variance / Accuracy</strong></td>
-              <td>Baseline manual reference</td>
-              <td><strong style="color: var(--accent-green);">94.7% Agreement (&lt; 5.2% variance)</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+    <!-- STEP 3: Summary -->
+    <section class="neu-card" style="text-align: center;">
+      <h2 class="step-title">Ready to Scan Your Building Portfolio?</h2>
+      <p class="step-desc">Available as a 1-click Windows app or Python command line tool.</p>
+      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" class="neu-btn neu-btn-primary">⭐ View on GitHub</a>
+    </section>
+  </div>
 
   <footer>
-    <div class="container">
-      <p>SolarScan &bull; Built by Oumar Ibrahim &bull; CC0 1.0 Public Domain</p>
-    </div>
+    SolarScan &bull; Built by Oumar Ibrahim &bull; CC0 Public Domain
   </footer>
 
   <script>
-    function runSolarScan() {
-      const bldg = document.getElementById('buildingSelect').value;
-      const setback = parseFloat(document.getElementById('setbackSlider').value);
-      const eff = parseFloat(document.getElementById('effSlider').value) / 100.0;
+    function calcSolar() {
+      const bldg = document.getElementById('bldg').value;
+      const setback = parseFloat(document.getElementById('setback').value);
+      const eff = parseFloat(document.getElementById('eff').value) / 100.0;
 
-      let rawArea = bldg === 'commercial' ? 2450.0 : 1610.02;
-      let perimeter = bldg === 'commercial' ? 210.0 : 165.4;
+      let area = bldg === 'dso' ? 2450 : 1610;
+      let usable = Math.max(100, area - (160 * setback));
+      let kw = usable * eff;
+      let payback = (kw * 1000) / (kw * 5.5 * 365 * 0.63 * 0.85 * 0.38);
 
-      const usableArea = Math.max(100, rawArea - (perimeter * setback));
-      const dcKw = usableArea * eff;
-      const acKw = dcKw / 1.20;
-      const annualKwh = dcKw * 5.5 * 365 * 0.6348 * 0.85;
-      const payback = (dcKw * 1000) / (annualKwh * 0.38);
+      document.getElementById('outKw').innerText = `${Math.round(kw)} kW DC`;
+      document.getElementById('outPay').innerText = `${payback.toFixed(1)} Years`;
 
-      document.getElementById('valDc').innerText = `${dcKw.toFixed(2)} kW DC`;
-      document.getElementById('valAc').innerText = `${acKw.toFixed(2)} kW AC`;
-      document.getElementById('valKwh').innerText = `${Math.round(annualKwh).toLocaleString()} kWh`;
-      document.getElementById('valPayback').innerText = `${payback.toFixed(2)} Yrs`;
-
-      drawSolarCanvas();
+      drawRoof();
     }
 
-    function drawSolarCanvas() {
+    function drawRoof() {
       const canvas = document.getElementById('solarCanvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#e2e8f0'; ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 2.5; ctx.beginPath();
-      ctx.moveTo(80, 40); ctx.lineTo(400, 40); ctx.lineTo(380, 150); ctx.lineTo(100, 150);
-      ctx.closePath(); ctx.stroke();
+      ctx.strokeStyle = '#16a34a'; ctx.lineWidth = 3;
+      ctx.strokeRect(30, 20, canvas.width-60, canvas.height-40);
 
-      ctx.fillStyle = 'rgba(8, 145, 178, 0.4)';
-      for (let x = 110; x < 370; x += 18) {
-        for (let y = 55; y < 135; y += 12) {
-          ctx.fillRect(x, y, 14, 8);
+      ctx.fillStyle = 'rgba(8, 145, 178, 0.5)';
+      for (let x = 45; x < canvas.width-45; x += 16) {
+        for (let y = 35; y < canvas.height-35; y += 12) {
+          ctx.fillRect(x, y, 12, 8);
         }
       }
     }
 
-    window.addEventListener('DOMContentLoaded', runSolarScan);
+    window.addEventListener('DOMContentLoaded', calcSolar);
   </script>
 </body>
 </html>
