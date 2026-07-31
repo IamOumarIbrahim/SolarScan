@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';" />
   <title>SolarScan — Automated Rooftop Solar Feasibility</title>
   <meta name="description" content="Automated rooftop solar PV feasibility report generator from OpenStreetMap building footprints." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,6 +33,11 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg-light); color: var(--text-main); font-family: var(--font-sans); line-height: 1.5; }
     a { color: var(--accent-green); text-decoration: none; }
+    a:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent-green); outline-offset: 2px; }
+
+    .skip-link { position: absolute; top: -40px; left: 10px; background: var(--accent-green); color: #fff; padding: 8px 16px; font-weight: 700; z-index: 1000; transition: top 0.2s; }
+    .skip-link:focus { top: 10px; }
+
     .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
 
     header { background: var(--bg-card); border-bottom: 1px solid var(--border-subtle); position: sticky; top: 0; z-index: 100; }
@@ -53,9 +59,11 @@
     }
 
     .btn-group { display: flex; gap: 12px; flex-wrap: wrap; }
-    .btn { padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn { padding: 10px 20px; border-radius: 6px; font-weight: 700; font-size: 0.9rem; cursor: pointer; border: none; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; }
     .btn-primary { background: var(--accent-green); color: #fff; }
+    .btn-primary:hover { background: #15803d; }
     .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid var(--border-dark); }
+    .btn-secondary:hover { border-color: var(--accent-green); }
 
     .role-box { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: 12px; padding: 20px; }
     .role-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--accent-green); letter-spacing: 0.05em; margin-bottom: 10px; }
@@ -87,20 +95,24 @@
     th, td { padding: 12px 16px; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; }
     th { background: var(--bg-header); color: #fff; font-family: var(--font-mono); font-size: 0.78rem; text-transform: uppercase; }
 
-    .code-box { background: var(--bg-header); border: 1px solid var(--border-dark); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 0.85rem; color: #4ade80; margin-top: 12px; }
+    .code-box { background: var(--bg-header); border: 1px solid var(--border-dark); border-radius: 6px; padding: 14px; font-family: var(--font-mono); font-size: 0.85rem; color: #4ade80; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; }
+    .copy-btn { background: rgba(255, 255, 255, 0.15); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-family: var(--font-sans); }
+    .copy-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
     footer { border-top: 1px solid var(--border-subtle); padding: 30px 0; color: var(--text-muted); font-size: 0.85rem; margin-top: 40px; text-align: center; }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <header>
+  <header role="banner">
     <div class="container nav-inner">
       <div class="logo">☀️ SolarScan</div>
-      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem;">GitHub Code</a>
+      <a href="https://github.com/IamOumarIbrahim/SolarScan" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.82rem;">GitHub Code</a>
     </div>
   </header>
 
-  <div class="container">
+  <main id="main-content" class="container">
     <!-- Hero -->
     <section class="hero">
       <div class="hero-grid">
@@ -121,9 +133,9 @@
 
         <div class="role-box">
           <div class="role-title">Select Focus Role</div>
-          <div class="role-btns">
-            <button class="role-btn active" id="btn-dev" onclick="setRole('dev')">Solar Developer</button>
-            <button class="role-btn" id="btn-portfolio" onclick="setRole('portfolio')">Portfolio Manager</button>
+          <div class="role-btns" role="tablist">
+            <button role="tab" aria-selected="true" class="role-btn active" id="btn-dev" onclick="setRole('dev')">Solar Developer</button>
+            <button role="tab" aria-selected="false" class="role-btn" id="btn-portfolio" onclick="setRole('portfolio')">Portfolio Manager</button>
           </div>
           <div id="roleDesc" style="font-size: 0.88rem; color: var(--text-muted);">
             Computes usable roof geometry after $1.50\text{m}$ fire-code setback insets, Mono-Si module efficiency ($20.0\%$), and $1.20$ DC/AC oversizing ratio.
@@ -143,7 +155,7 @@
       <div class="est-body">
         <div class="est-controls">
           <div class="form-group">
-            <label class="form-label">Target Building</label>
+            <label for="bldg" class="form-label">Target Building</label>
             <select id="bldg" class="form-select" onchange="runSolarScan()">
               <option value="cs_w5">CS Dept W5, Sharjah (1,610.02 m²)</option>
               <option value="commercial">Commercial Hub, Dubai (2,450.00 m²)</option>
@@ -151,12 +163,12 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Setback Buffer: <span id="setbackLabel">1.50</span>m</label>
+            <label for="setback" class="form-label">Setback Buffer: <span id="setbackLabel">1.50</span>m</label>
             <input type="range" id="setback" class="form-range" min="0.5" max="3.0" step="0.1" value="1.5" oninput="document.getElementById('setbackLabel').innerText = parseFloat(this.value).toFixed(2); runSolarScan();">
           </div>
 
           <div class="form-group">
-            <label class="form-label">Panel Efficiency: <span id="effLabel">20.0</span>%</label>
+            <label for="eff" class="form-label">Panel Efficiency: <span id="effLabel">20.0</span>%</label>
             <input type="range" id="eff" class="form-range" min="16.0" max="23.0" step="0.5" value="20.0" oninput="document.getElementById('effLabel').innerText = parseFloat(this.value).toFixed(1); runSolarScan();">
           </div>
 
@@ -164,7 +176,7 @@
         </div>
 
         <div style="padding: 20px;">
-          <canvas id="solarCanvas" class="footprint-canvas" width="600" height="190"></canvas>
+          <canvas id="solarCanvas" class="footprint-canvas" width="600" height="190" aria-label="Rooftop Footprint Array Display"></canvas>
           <div class="metrics-grid">
             <div class="metric-card">
               <div class="metric-title">RECOMMENDED DC ARRAY</div>
@@ -193,9 +205,9 @@
       <table>
         <thead>
           <tr>
-            <th>Parameter</th>
-            <th>Google Earth Manual Tracing</th>
-            <th>SolarScan Footprint Engine</th>
+            <th scope="col">Parameter</th>
+            <th scope="col">Google Earth Manual Tracing</th>
+            <th scope="col">SolarScan Footprint Engine</th>
           </tr>
         </thead>
         <tbody>
@@ -221,27 +233,39 @@
     <!-- Quickstart -->
     <h2 class="section-title" id="quickstart">Verified Quickstart</h2>
     <div class="code-box">
-      # Run solar feasibility analysis on building query<br>
-      python -m solarscan "Computer Science Department W5 Sharjah"
+      <code id="cmd1">python -m solarscan "Computer Science Department W5 Sharjah"</code>
+      <button class="copy-btn" onclick="copyCmd('cmd1', this)">Copy</button>
     </div>
-  </div>
+  </main>
 
-  <footer>
+  <footer role="contentinfo">
     SolarScan Engine &bull; Oumar Ibrahim &bull; CC0 Public Domain
   </footer>
 
   <script>
+    function copyCmd(id, btn) {
+      const text = document.getElementById(id).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.innerText = 'Copied!';
+        setTimeout(() => { btn.innerText = 'Copy'; }, 2000);
+      });
+    }
+
     function setRole(role) {
       document.getElementById('btn-dev').classList.remove('active');
       document.getElementById('btn-portfolio').classList.remove('active');
+      document.getElementById('btn-dev').setAttribute('aria-selected', 'false');
+      document.getElementById('btn-portfolio').setAttribute('aria-selected', 'false');
       const desc = document.getElementById('roleDesc');
 
       if (role === 'dev') {
         document.getElementById('btn-dev').classList.add('active');
-        desc.innerHTML = 'Computes usable roof geometry after $1.50\\text{m}$ fire-code setback insets, Mono-Si module efficiency ($20.0\\%$), and $1.20$ DC/AC oversizing ratio.';
+        document.getElementById('btn-dev').setAttribute('aria-selected', 'true');
+        desc.innerText = 'Computes usable roof geometry after 1.50m fire-code setback insets, Mono-Si module efficiency (20.0%), and 1.20 DC/AC oversizing ratio.';
       } else {
         document.getElementById('btn-portfolio').classList.add('active');
-        desc.innerHTML = 'Batch CSV building processing, annual energy yield ($232,394\\text{ kWh/yr}$), payback estimates ($3.08\\text{ years}$), and client PDF reports.';
+        document.getElementById('btn-portfolio').setAttribute('aria-selected', 'true');
+        desc.innerText = 'Batch CSV building processing, annual energy yield (232,394 kWh/yr), payback estimates (3.08 years), and client PDF reports.';
       }
       if (window.MathJax) MathJax.typesetPromise();
     }
@@ -266,7 +290,6 @@
       document.getElementById('valPayback').innerText = `${payback.toFixed(2)} Yrs`;
 
       drawSolarCanvas(setback);
-      if (window.MathJax) MathJax.typesetPromise();
     }
 
     function drawSolarCanvas(setback) {
