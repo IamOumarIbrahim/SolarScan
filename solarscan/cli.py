@@ -12,7 +12,7 @@ from solarscan.geometry import (
 )
 from solarscan.sizing import calculate_dc_capacity, recommend_inverter_capacity
 from solarscan.yield_estimate import estimate_annual_yield, estimate_simple_payback
-from solarscan.report import generate_pdf_report
+from solarscan.report import generate_pdf_report, generate_html_report
 
 
 def load_config(config_path="solarscan.yaml"):
@@ -33,7 +33,7 @@ def load_config(config_path="solarscan.yaml"):
     return defaults
 
 
-def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=None, setback=None, out_dir="reports", config_path="solarscan.yaml", fixture_path=None):
+def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=None, setback=None, out_dir="reports", config_path="solarscan.yaml", fixture_path=None, fmt="pdf"):
     cfg = load_config(config_path)
     
     tilt_deg = tilt if tilt is not None else cfg.get("default_tilt_deg", 15)
@@ -67,6 +67,7 @@ def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=N
 
     safe_name = "".join(c if c.isalnum() else "_" for c in address)[:30]
     out_pdf = os.path.join(out_dir, f"SolarScan_Report_{safe_name}.pdf")
+    out_html = os.path.join(out_dir, f"SolarScan_Report_{safe_name}.html")
 
     report_data = {
         "address": address,
@@ -88,14 +89,20 @@ def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=N
         "payback_years": payback_years
     }
 
-    generate_pdf_report(report_data, out_pdf)
+    if fmt in ("pdf", "both"):
+        generate_pdf_report(report_data, out_pdf)
+    if fmt in ("html", "both"):
+        generate_html_report(report_data, out_html)
     
     print(f"Scan completed for '{address}':")
     print(f"  - Raw Area: {raw_area:.2f} m² | Usable Area: {usable_area:.2f} m²")
     print(f"  - DC Capacity: {dc_capacity_kw:.2f} kW DC | Inverter Band: {ac_capacity_kw:.2f} kW AC")
     print(f"  - Annual Yield: {annual_kwh:,.2f} kWh/yr | Payback: {payback_years:.2f} yrs")
-    print(f"  - Report saved to: {out_pdf}")
-    return out_pdf
+    if fmt in ("pdf", "both"):
+        print(f"  - PDF Report saved to: {out_pdf}")
+    if fmt in ("html", "both"):
+        print(f"  - HTML Report saved to: {out_html}")
+    return out_html if fmt == "html" else out_pdf
 
 
 def main():
@@ -114,15 +121,18 @@ def main():
     scan_parser.add_argument("--out", type=str, default="reports", help="Output directory")
     scan_parser.add_argument("--config", type=str, default="solarscan.yaml", help="Path to config file")
     scan_parser.add_argument("--fixture", type=str, default=None, help="Path to offline JSON fixture")
+    scan_parser.add_argument("--format", choices=["pdf", "html", "both"], default="pdf", help="Output format")
 
     # Demo subcommand
-    subparsers.add_parser("demo", help="Run deterministic offline demo case study")
+    demo_parser = subparsers.add_parser("demo", help="Run deterministic offline demo case study")
+    demo_parser.add_argument("--format", choices=["pdf", "html", "both"], default="pdf", help="Output format")
 
     # Batch subcommand
     batch_parser = subparsers.add_parser("batch", help="Batch scan addresses from CSV")
     batch_parser.add_argument("csv_file", type=str, help="CSV file containing 'address' column")
     batch_parser.add_argument("--out", type=str, default="reports", help="Output directory")
     batch_parser.add_argument("--config", type=str, default="solarscan.yaml", help="Path to config file")
+    batch_parser.add_argument("--format", choices=["pdf", "html", "both"], default="pdf", help="Output format")
 
     args = parser.parse_args()
 
@@ -137,7 +147,8 @@ def main():
             setback=args.setback,
             out_dir=args.out,
             config_path=args.config,
-            fixture_path=args.fixture
+            fixture_path=args.fixture,
+            fmt=args.format
         )
     elif args.command == "demo":
         run_scan(
@@ -145,7 +156,8 @@ def main():
             fixture_path="fixtures/w5_demo.json",
             tilt=15,
             rate_aed=0.38,
-            out_dir="reports/demo"
+            out_dir="reports/demo",
+            fmt=args.format
         )
     elif args.command == "batch":
         if not os.path.exists(args.csv_file):
@@ -161,7 +173,7 @@ def main():
                 lat = float(row["lat"]) if row.get("lat") and row["lat"].strip() else None
                 lon = float(row["lon"]) if row.get("lon") and row["lon"].strip() else None
                 print(f"\n[{idx}/{total}] Processing '{addr}'...")
-                run_scan(address=addr, lat=lat, lon=lon, out_dir=args.out, config_path=args.config)
+                run_scan(address=addr, lat=lat, lon=lon, out_dir=args.out, config_path=args.config, fmt=args.format)
             print(f"\n[COMPLETE] Batch processing finished! Reports saved to '{args.out}'.")
     else:
         parser.print_help()
