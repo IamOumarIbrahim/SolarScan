@@ -1,8 +1,8 @@
 ; SolarScan Inno Setup Wizard Script
-; Generates standalone Windows 1-click installer (SolarScan_Setup_v0.5.0.exe)
+; Generates standalone Windows 1-click installer (SolarScan_Setup_v1.0.0.exe)
 
 #define MyAppName "SolarScan"
-#define MyAppVersion "0.5.0"
+#define MyAppVersion "1.0.0"
 #define MyAppPublisher "IamOumarIbrahim"
 #define MyAppURL "https://github.com/IamOumarIbrahim/SolarScan"
 #define MyAppExeName "SolarScan.exe"
@@ -20,7 +20,7 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 LicenseFile=..\LICENSE
 OutputDir=..\dist
-OutputBaseFilename=SolarScan_Setup_v0.5.0
+OutputBaseFilename=SolarScan_Setup_v1.0.0
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern

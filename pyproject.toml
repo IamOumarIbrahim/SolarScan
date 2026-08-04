@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "solarscan"
-version = "0.5.0"
+version = "1.0.0"
 description = "Automated Rooftop Solar Feasibility Reports from OpenStreetMap Building Footprints"
 readme = "README.md"
 requires-python = ">=3.10"

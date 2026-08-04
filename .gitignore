@@ -7,5 +7,7 @@ build/
 dist/
 reports/*.pdf
 reports/*_diagram.png
+reports/**/*.pdf
+reports/demo/
 .venv/
 env/

@@ -5,6 +5,7 @@ import yaml
 import csv
 
 from solarscan.osm import geocode_address, query_osm_building
+from solarscan.fixtures import load_fixture
 from solarscan.geometry import (
     latlon_to_meters, calculate_shoelace_area, calculate_perimeter,
     calculate_usable_area, calculate_dominant_azimuth
@@ -32,7 +33,7 @@ def load_config(config_path="solarscan.yaml"):
     return defaults
 
 
-def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=None, setback=None, out_dir="reports", config_path="solarscan.yaml"):
+def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=None, setback=None, out_dir="reports", config_path="solarscan.yaml", fixture_path=None):
     cfg = load_config(config_path)
     
     tilt_deg = tilt if tilt is not None else cfg.get("default_tilt_deg", 15)
@@ -40,10 +41,15 @@ def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=N
     eff = module_eff if module_eff is not None else cfg.get("module_efficiency", 0.20)
     dc_ac_ratio = cfg.get("dc_ac_ratio", 1.2)
 
-    if lat is None or lon is None:
-        lat, lon = geocode_address(address)
-        
-    osm_data = query_osm_building(lat, lon)
+    if fixture_path:
+        osm_data = load_fixture(fixture_path)
+        lat = osm_data["query_lat"]
+        lon = osm_data["query_lon"]
+    else:
+        if lat is None or lon is None:
+            lat, lon = geocode_address(address)
+        osm_data = query_osm_building(lat, lon)
+
     polygon_coords = osm_data["polygon_coords"]
     obstruction_area = osm_data.get("obstruction_area", 0.0)
 
@@ -107,6 +113,10 @@ def main():
     scan_parser.add_argument("--setback", type=float, default=None, help="Fire-code setback in meters")
     scan_parser.add_argument("--out", type=str, default="reports", help="Output directory")
     scan_parser.add_argument("--config", type=str, default="solarscan.yaml", help="Path to config file")
+    scan_parser.add_argument("--fixture", type=str, default=None, help="Path to offline JSON fixture")
+
+    # Demo subcommand
+    subparsers.add_parser("demo", help="Run deterministic offline demo case study")
 
     # Batch subcommand
     batch_parser = subparsers.add_parser("batch", help="Batch scan addresses from CSV")
@@ -126,7 +136,16 @@ def main():
             module_eff=args.module_efficiency,
             setback=args.setback,
             out_dir=args.out,
-            config_path=args.config
+            config_path=args.config,
+            fixture_path=args.fixture
+        )
+    elif args.command == "demo":
+        run_scan(
+            address="Computer Science Department W5 Sharjah",
+            fixture_path="fixtures/w5_demo.json",
+            tilt=15,
+            rate_aed=0.38,
+            out_dir="reports/demo"
         )
     elif args.command == "batch":
         if not os.path.exists(args.csv_file):
