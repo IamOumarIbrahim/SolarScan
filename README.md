@@ -2,11 +2,10 @@
   <h1>SolarScan</h1>
   <p><strong>Automated Rooftop Solar Feasibility Reports from OpenStreetMap Building Footprints</strong></p>
 
-  [![Python](https://img.shields.io/badge/Python-3.10+-blue.svg?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-  [![License: CC0 1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square)](https://creativecommons.org/publicdomain/zero/1.0/)
-  [![Platform](https://img.shields.io/badge/Platform-Cross--platform-lightgrey.svg?style=flat-square)](#)
-  [![Key Dependency](https://img.shields.io/badge/OSM_Overpass-API-7EBC6F.svg?style=flat-square)](https://overpass-api.de/)
-  [![CI](https://github.com/IamOumarIbrahim/SolarScan/actions/workflows/ci.yml/badge.svg)](https://github.com/IamOumarIbrahim/SolarScan/actions)
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?style=flat-square&logo=python&logoColor=white" alt="Python" /></a>
+  <a href="https://creativecommons.org/publicdomain/zero/1.0/"><img src="https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg?style=flat-square" alt="License: CC0 1.0" /></a>
+  <img src="https://img.shields.io/badge/Platform-Cross--platform-lightgrey.svg?style=flat-square" alt="Platform" />
+  <a href="https://overpass-api.de/"><img src="https://img.shields.io/badge/OSM_Overpass-API-7EBC6F.svg?style=flat-square" alt="Key Dependency" /></a>
   <br />
   <a href="https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe">
     <img src="https://img.shields.io/badge/Download_1--Click_Windows_Installer-v0.5.0_EXE-22c55e.svg?style=for-the-badge&logo=windows&logoColor=white" alt="Download Windows Installer" />
