@@ -33,6 +33,8 @@ def load_config(config_path="solarscan.yaml"):
     return defaults
 
 
+import re
+
 def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=None, setback=None, out_dir="reports", config_path="solarscan.yaml", fixture_path=None, fmt="pdf"):
     cfg = load_config(config_path)
     
@@ -65,7 +67,18 @@ def run_scan(address, lat=None, lon=None, tilt=None, rate_aed=0.38, module_eff=N
     annual_kwh = estimate_annual_yield(dc_capacity_kw, tilt_deg=tilt_deg, azimuth_deg=azimuth_deg)
     payback_years = estimate_simple_payback(annual_kwh, rate_aed, dc_capacity_kw=dc_capacity_kw)
 
-    safe_name = "".join(c if c.isalnum() else "_" for c in address)[:30]
+    if address.startswith(("http://", "https://")):
+        match_place = re.search(r'/place/([^/@]+)', address)
+        if match_place:
+            raw_name = match_place.group(1).replace('+', '_')
+        else:
+            raw_name = f"scan_{lat:.4f}_{lon:.4f}"
+        safe_name = "".join(c if c.isalnum() else "_" for c in raw_name)[:35].strip('_')
+        if not safe_name:
+            safe_name = f"scan_{lat:.4f}_{lon:.4f}"
+    else:
+        safe_name = "".join(c if c.isalnum() else "_" for c in address)[:35].strip('_')
+
     out_pdf = os.path.join(out_dir, f"SolarScan_Report_{safe_name}.pdf")
     out_html = os.path.join(out_dir, f"SolarScan_Report_{safe_name}.html")
 

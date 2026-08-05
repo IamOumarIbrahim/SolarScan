@@ -29,7 +29,7 @@
 **SolarScan** is a first-pass rooftop solar screening tool. The supported `solarscan` package queries OpenStreetMap footprints, applies transparent sizing assumptions, and generates a local PDF. The repository also contains experimental feasibility, PV-design, and SAM-export modules for further development.
 
 ```bash
-# Quickstart — run rooftop feasibility analysis
+# Quickstart  run rooftop feasibility analysis
 python -m pip install -e .
 solarscan scan "Computer Science Department W5 Sharjah"
 ```
@@ -140,9 +140,9 @@ SolarScan's automated feasibility model is built on standard commercial PV engin
 
 | Technology Parameter | Value / Baseline | Details & Specifications |
 | :--- | :--- | :--- |
-| **PV Module Type** | **Monocrystalline Silicon (Mono-Si)** | Standard 400 W – 550 W commercial PV modules rated at STC (1,000 W/m², 25°C, AM 1.5G). |
+| **PV Module Type** | **Monocrystalline Silicon (Mono-Si)** | Standard 400 W  550 W commercial PV modules rated at STC (1,000 W/m², 25°C, AM 1.5G). |
 | **Module Efficiency ($\eta_{\text{module}}$)** | **20.0%** *(Configurable)* | Baseline module STC conversion efficiency (0.20 kW/m²). |
-| **Inverter Architecture** | **Commercial String / Central Inverter** | Three-phase 50 kW – 110 kW commercial string inverters (e.g., Huawei SUN2000, SMA Sunny Tripower, Sungrow). |
+| **Inverter Architecture** | **Commercial String / Central Inverter** | Three-phase 50 kW  110 kW commercial string inverters (e.g., Huawei SUN2000, SMA Sunny Tripower, Sungrow). |
 | **DC/AC Oversizing Ratio** | **1.20** (120% Over-paneling) | Oversizes DC array by 20% relative to AC rating ($P_{\text{AC}} = P_{\text{DC}} / 1.2$) to maximize inverter utilization. |
 | **Solar Resource (PSH)** | **5.5 kWh/m²/day** | Default Peak Sun Hours for sunny / high-irradiance regions (e.g. UAE / Middle East / US Sunbelt). |
 | **System Derate / Loss Factor** | **0.85** (15% Total Loss) | Accounts for combined DC/AC wiring loss, thermal derating, inverter inefficiency, and module soiling. |
@@ -189,13 +189,13 @@ Here is a **Side-by-Side Comparison** showing Google Earth's manual rooftop meas
 
 ## Setup & Installation
 
-### Option 0: 1-Click Direct Download (Non-Technical Users — No Python Required)
+### Option 0: 1-Click Direct Download (Non-Technical Users  No Python Required)
 If you do not have Python installed or prefer a standalone Windows application:
 
  **[Download SolarScan_Setup_v0.5.0.exe (34 MB)](https://github.com/IamOumarIbrahim/SolarScan/releases/download/v0.5.0/SolarScan_Setup_v0.5.0.exe)**
 
 * **Zero Dependencies**: Bundles Python runtime and all C-extensions out-of-the-box. Upgrades outdated local packages automatically during setup.
-* **Optional System Integration**: Select “Add SolarScan to system PATH” during setup, then open a new terminal and run `solarscan scan "..."`.
+* **Optional System Integration**: Select Add SolarScan to system PATH during setup, then open a new terminal and run `solarscan scan "..."`.
 * **Desktop Shortcuts**: Creates Start Menu & Desktop shortcuts for `SolarScan CLI`.
 
 ---
@@ -280,7 +280,7 @@ dc_ac_ratio: 1.2
 - **Building Selection**: The nearest returned OSM way is selected. Dense sites and multipolygon relations need manual verification.
 - **Setback & Obstructions**: The setback is an area approximation (`A - P × s`), not a geometric inset or fire-code layout. Rooftop obstructions are not extracted by the current query.
 - **Shading & Structure**: SolarScan does not model 3D shading, roof pitch, structural capacity, equipment clearances, or interconnection constraints.
-- **Yield & Finance**: Peak sun hours, losses, installed cost, and tariff are configurable screening assumptions—not a bankable energy or financial model.
+- **Yield & Finance**: Peak sun hours, losses, installed cost, and tariff are configurable screening assumptionsnot a bankable energy or financial model.
 - **Professional Review**: Every generated report requires site-specific engineering, code, utility, and commercial review before a real project decision.
 
 ---
